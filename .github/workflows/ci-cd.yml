@@ -36,7 +36,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t go-trading-server .
+          docker build -t trader .
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -49,7 +49,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/go-trading-server:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/trader:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -66,4 +66,4 @@ jobs:
 
       - name: Deploy to Debian server
         run: |
-          ssh -o StrictHostKeyChecking=no user@your-debian-server "docker pull $DOCKER_USERNAME/go-trading-server:latest && docker run -d -p 8080:8080 $DOCKER_USERNAME/go-trading-server:latest"
+          ssh -o StrictHostKeyChecking=no admin@3.123.41.68 "docker pull $DOCKER_USERNAME/trader:latest && docker run -d -p 8080:8080 $DOCKER_USERNAME/trader:latest"
