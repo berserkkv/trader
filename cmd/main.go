@@ -2,17 +2,24 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func handleTrade(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Welcome to your trading server!")
+func handleTrade(c *gin.Context) {
+	c.String(200, "Welcome to your trading server!")
 }
 
 func main() {
-	http.HandleFunc("/trade", handleTrade)
+	// Initialize the Gin router
+	r := gin.Default()
+
+	// Define a route for the trade handler
+	r.GET("/", handleTrade)
+
+	// Start the server on port 8080
 	fmt.Println("Server started at http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := r.Run(":8080"); err != nil {
 		fmt.Println("Error starting server:", err)
 	}
 }

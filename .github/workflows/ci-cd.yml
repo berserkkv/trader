@@ -1,0 +1,62 @@
+name: CI/CD Pipeline for Go Trading Server
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.20'
+
+      - name: Cache Go modules
+        uses: actions/cache@v2
+        with:
+          path: /tmp/go-cache
+          key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Build Go project
+        run: |
+          go mod tidy
+          go build -o trader ./cmd/main.go
+
+      - name: Build Docker image
+        run: |
+          docker build -t go trader .
+
+      - name: Push Docker image to DockerHub (optional)
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+          docker tag go trader $DOCKER_USERNAME/go trader:latest
+          docker push $DOCKER_USERNAME/go trader:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to Debian server
+        run: |
+          ssh -o StrictHostKeyChecking=no user@your-debian-server "docker pull $DOCKER_USERNAME/go trader:latest && docker run -d -p 8080:8080 $DOCKER_USERNAME/go trader:latest"
