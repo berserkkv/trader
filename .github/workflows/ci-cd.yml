@@ -64,7 +64,7 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no admin@3.123.41.68 << 'EOF'
+          ssh -o StrictHostKeyChecking=no admin@3.123.41.68 << EOF
             set -e
             echo "Pulling image from Docker Hub..."
             docker pull ${DOCKER_USERNAME}/trader:latest
@@ -75,4 +75,4 @@ jobs:
 
             echo "Running new container..."
             docker run -d --restart=unless-stopped --name trader -p 8080:8080 ${DOCKER_USERNAME}/trader:latest
-EOF
+          EOF
