@@ -7,7 +7,7 @@ import (
 )
 
 func handleTrade(c *gin.Context) {
-	c.String(200, "Welcome to your trading server!")
+	c.String(200, "Welcome to your trading server! Berserkkv")
 }
 
 func main() {
