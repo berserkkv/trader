@@ -3,17 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/templates/style.css">
     <title>Trader</title>
 </head>
 <body>
-<div>
-    <label for="symbol">Symbol (e.g., BTCUSDT): </label>
-    <input type="text" id="symbol" placeholder="BTCUSDT" />
-    <button onclick="changePair()">Set</button>
+<div class="p-2 bg-1">
+    <label for="symbol" class="block text-xs text-gray-400 mb-1">Symbol:</label>
+    <select id="symbol" onchange="changePair()">
+        <option value="BTCUSDT">BTCUSDT</option>
+        <option value="ETHUSDT">ETHUSDT</option>
+        <option value="SOLUSDT">SOLUSDT</option>
+        <option value="BNBUSDT">BNBUSDT</option>
+    </select>
 </div>
 
-<h3><span id="priceLabel"></span><span id="price">Loading...</span></h3>
+
+
+
+<div class="mt-2 text-center bg-1 m-2 rounded">
+    <span id="priceLabel" class="text-gray-400 text-xs"></span>
+    <p class="text-xl">
+        <span id="price" class="text-green-500 font-bold">Loading...</span>
+    </p>
+</div>
+
+<div class="mt-2 bg-1 m-2 rounded text-white p-4 flex gap-4">
+    <!-- Buy Section -->
+    <div class="w-1/2 space-y-2 h-72 flex flex-col justify-between">
+        <div>
+            <h3 class="text-green-400 font-semibold mb-2">Buy</h3>
+
+            <label class="block text-sm mb-1">Order Type:</label>
+            <select id="buyOrderType" class="w-full bg-[#2a2a2e] text-white p-1 rounded mb-2">
+                <option value="market">Market</option>
+                <option value="limit">Limit</option>
+            </select>
+
+            <div id="buyLimitWrapper" class="transition-all duration-300 overflow-hidden h-0 opacity-0">
+                <label class="block text-sm mb-1">Limit Price:</label>
+                <input type="number" class="w-full bg-2 text-white p-1 rounded"
+                       min="0"
+                       oninput="this.value = Math.max(0, this.value)"
+                       placeholder="Enter price" />
+            </div>
+
+            <label class="block text-sm mt-2 mb-1">Amount:</label>
+            <input type="number" class="w-full bg-2 text-white p-1 rounded"
+                   min="0"
+                   oninput="this.value = Math.max(0, this.value)"
+                   placeholder="Amount to buy" />
+        </div>
+
+        <button class="w-full bg-green-600 hover:bg-green-700 py-1 rounded">BUY</button>
+    </div>
+
+    <div class="border-l border-2 h-72"></div>
+
+    <!-- Sell Section -->
+    <div class="w-1/2 space-y-2 h-72 flex flex-col justify-between">
+        <div>
+            <h3 class="text-red-400 font-semibold mb-2">Sell</h3>
+
+            <label class="block text-sm mb-1">Order Type:</label>
+            <select id="sellOrderType" class="w-full bg-[#2a2a2e] text-white p-1 rounded mb-2">
+                <option value="market">Market</option>
+                <option value="limit">Limit</option>
+            </select>
+
+            <div id="sellLimitWrapper" class="transition-all duration-300 overflow-hidden h-0 opacity-0">
+                <label class="block text-sm mb-1">Limit Price:</label>
+                <input type="number" class="w-full bg-2 text-white p-1 rounded"
+                       min="0"
+                       oninput="this.value = Math.max(0, this.value)"
+                       placeholder="Enter price" />
+            </div>
+
+            <label class="block text-sm mt-2 mb-1">Amount (%):</label>
+            <input type="range" min="0" max="100" value="0" class="w-full" id="sellSlider" />
+            <p class="text-xs mt-1">Selected: <span id="sellPercent">0%</span></p>
+        </div>
+
+        <button class="w-full bg-red-600 hover:bg-red-700 py-1 rounded">SELL</button>
+    </div>
+</div>
+
+
 
 <script src="/templates/script.js"></script>
 </body>
