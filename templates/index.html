@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/templates/style.css">
+    <title>Trader</title>
+</head>
+<body>
+<div>
+    <label for="symbol">Symbol (e.g., BTCUSDT): </label>
+    <input type="text" id="symbol" placeholder="BTCUSDT" />
+    <button onclick="changePair()">Set</button>
+</div>
+
+<h3><span id="priceLabel"></span><span id="price">Loading...</span></h3>
+
+<script src="/templates/script.js"></script>
+</body>
+</html>
