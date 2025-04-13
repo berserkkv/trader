@@ -3,8 +3,8 @@ let lastPair = localStorage.getItem("lastPair") || "btcusdt"; // Default to BTC/
 
 // Connect to WebSocket and send symbol
 function connectToWebSocket() {
-    ws = new WebSocket("ws://3.123.41.68/8080/ws");
-
+    ws = new WebSocket("ws://3.123.41.68:8080/ws");
+    //sw = new WebSocket("ws://localhost:8080/ws");
     ws.onopen = () => {
         console.log("WebSocket connected");
         ws.send(JSON.stringify(lastPair));
