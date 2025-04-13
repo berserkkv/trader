@@ -3,10 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/templates/style.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
     <title>Trader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e22;
+            margin: 0;
+            padding: 0;
+        }
+        .bg-1{
+            background-color: #323235;
+        }
+        .bg-2{
+            background-color: #1e1e22 !important;
+        }
+        .border-2{
+            border-color: #1e1e22 !important;
+        }
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: #1e1e22 !important;
+            color: #c6c6c6 !important;
+            border: 1px solid #151515; /* optional: gray-600 */
+            padding: 0.25rem;
+        }
+
+        /* Hide the number input spinner */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+
+        /* For Firefox */
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 1px;
+            background: #808080;
+            border-radius: 0px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #737373;
+            cursor: pointer;
+            border: 2px solid #fff;
+
+        }
+
+        input[type=range]::-moz-range-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #737373;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+
+        input[type=range]::-ms-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #737373;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+
+
+    </style>
 </head>
 <body>
 <div class="p-2 bg-1">
@@ -33,23 +110,21 @@
     <!-- Buy Section -->
     <div class="w-1/2 space-y-2 h-72 flex flex-col justify-between">
         <div>
-            <h3 class="text-green-400 font-semibold mb-2">Buy</h3>
-
-            <label class="block text-sm mb-1">Order Type:</label>
+            <label class="block text-xs text-gray-400 mb-1">Order Type:</label>
             <select id="buyOrderType" class="w-full bg-[#2a2a2e] text-white p-1 rounded mb-2">
                 <option value="market">Market</option>
                 <option value="limit">Limit</option>
             </select>
 
             <div id="buyLimitWrapper" class="transition-all duration-300 overflow-hidden h-0 opacity-0">
-                <label class="block text-sm mb-1">Limit Price:</label>
+                <label class="block text-xs text-gray-400  mb-1">Limit Price:</label>
                 <input type="number" class="w-full bg-2 text-white p-1 rounded"
                        min="0"
                        oninput="this.value = Math.max(0, this.value)"
                        placeholder="Enter price" />
             </div>
 
-            <label class="block text-sm mt-2 mb-1">Amount:</label>
+            <label class="block text-xs text-gray-400  mt-2 mb-1">Amount:</label>
             <input type="number" class="w-full bg-2 text-white p-1 rounded"
                    min="0"
                    oninput="this.value = Math.max(0, this.value)"
@@ -64,25 +139,23 @@
     <!-- Sell Section -->
     <div class="w-1/2 space-y-2 h-72 flex flex-col justify-between">
         <div>
-            <h3 class="text-red-400 font-semibold mb-2">Sell</h3>
-
-            <label class="block text-sm mb-1">Order Type:</label>
+            <label class="block text-xs text-gray-400 mb-1">Order Type:</label>
             <select id="sellOrderType" class="w-full bg-[#2a2a2e] text-white p-1 rounded mb-2">
                 <option value="market">Market</option>
                 <option value="limit">Limit</option>
             </select>
 
             <div id="sellLimitWrapper" class="transition-all duration-300 overflow-hidden h-0 opacity-0">
-                <label class="block text-sm mb-1">Limit Price:</label>
+                <label class="block text-xs text-gray-400 mb-1">Limit Price:</label>
                 <input type="number" class="w-full bg-2 text-white p-1 rounded"
                        min="0"
                        oninput="this.value = Math.max(0, this.value)"
                        placeholder="Enter price" />
             </div>
 
-            <label class="block text-sm mt-2 mb-1">Amount (%):</label>
-            <input type="range" min="0" max="100" value="0" class="w-full" id="sellSlider" />
-            <p class="text-xs mt-1">Selected: <span id="sellPercent">0%</span></p>
+            <label class="block text-xs text-gray-400 mt-2 mb-1">Amount (%):</label>
+            <input type="range" min="0" max="100" value="0" step="5" class="w-full" id="sellSlider" />
+            <p class="text-xs mt-3"><span id="sellPercent">0%</span></p>
         </div>
 
         <button class="w-full bg-red-600 hover:bg-red-700 py-1 rounded">SELL</button>
