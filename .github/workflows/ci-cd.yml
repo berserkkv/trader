@@ -64,7 +64,7 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no admin@3.123.41.68 << EOF
+          ssh -o StrictHostKeyChecking=no ber@193.180.208.245 << EOF
             set -e
             echo "Pulling image from Docker Hub..."
             docker pull ${DOCKER_USERNAME}/trader:latest
