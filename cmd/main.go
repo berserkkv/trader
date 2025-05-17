@@ -11,7 +11,6 @@ import (
 	"github.com/berserkkv/trader/tools/config"
 	logger "github.com/berserkkv/trader/tools/log"
 	"log/slog"
-	"time"
 )
 
 func main() {
@@ -20,7 +19,6 @@ func main() {
 	logger.Init(cnf.Logger.Level, cnf.Env)
 
 	database.ConnectDB()
-	time.Sleep(1 * time.Second)
 
 	slog.Info("Server started on port: 8080")
 
