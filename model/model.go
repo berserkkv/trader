@@ -18,33 +18,35 @@ type Candle struct {
 
 type HeikinAshi struct {
 	Open, High, Low, Close float64
+	Color                  string
 }
 
 type Position struct {
-	ID          int       // Unique identifier
-	IsOpen      bool      // Whether position is currently open
-	StartedTime time.Time // position started time
-	ClosedTime  time.Time // position closed time
-	CreatedTime time.Time // init time
-	UpdatedTime time.Time
-	Symbol      string  // e.g., "BTC/USDT" or "AAPL"
-	Side        string  // "BUY" or "SELL"
-	EntryPrice  float64 // Price at which position was entered
-	ExitPrice   float64 // Price at which position was exited (0 if open)
-	Quantity    float64 // Quantity traded
-	ProfitLoss  float64 // Realized or unrealized PnL
-	StopLoss    float64 // Optional stop-loss level
-	TakeProfit  float64 // Optional take-profit level
+	ID          int       `json:"id,omitempty"`
+	Name        string    `json:"name,omitempty"`
+	IsOpen      bool      `json:"isOpen,omitempty"`
+	StartedTime time.Time `json:"startedTime,omitempty"`
+	ClosedTime  time.Time `json:"closedTime,omitempty"`
+	CreatedTime time.Time `json:"createdTime,omitempty"`
+	UpdatedTime time.Time `json:"updatedTime,omitempty"`
+	Symbol      string    `json:"symbol" binding:"required"`
+	Side        string    `json:"side,omitempty"`
+	EntryPrice  float64   `json:"entryPrice,omitempty"`
+	ExitPrice   float64   `json:"exitPrice,omitempty"`
+	Quantity    float64   `json:"quantity,omitempty"`
+	ProfitLoss  float64   `json:"profitLoss,omitempty"`
+	StopLoss    float64   `json:"stopLoss,omitempty"`
+	TakeProfit  float64   `json:"takeProfit,omitempty"`
 }
 
 type Order struct {
-	ID        int
-	Symbol    string
-	Side      string
-	Type      string
-	Price     float64
-	Quantity  float64
-	Status    string    // "OPEN", "FILLED", "CANCELLED"
-	CreatedAt time.Time // Order creation time
-	FilledAt  time.Time // Order filled time
+	ID        int       `json:"id,omitempty"`
+	Symbol    string    `json:"symbol,omitempty"`
+	Side      string    `json:"side,omitempty"`
+	Type      string    `json:"type,omitempty"`
+	Price     float64   `json:"price,omitempty"`
+	Quantity  float64   `json:"quantity,omitempty"`
+	Status    string    `json:"status,omitempty"` // "OPEN", "FILLED", "CANCELLED"
+	CreatedAt time.Time `json:"createdAt,omitempty"`
+	FilledAt  time.Time `json:"filledAt,omitempty"`
 }

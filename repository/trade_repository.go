@@ -5,6 +5,32 @@ import (
 	"github.com/berserkkv/trader/model"
 )
 
+func GetAllPositions() []model.Position {
+	var positions []model.Position
+	database.DB.Find(&positions)
+	return positions
+}
+
+func GetPositionById(id uint) (model.Position, error) {
+	var position model.Position
+	err := database.DB.First(&position, id).Error
+	return position, err
+}
+
+func CreatePosition(position model.Position) model.Position {
+	database.DB.Create(&position)
+	return position
+}
+
+func UpdatePosition(position model.Position) model.Position {
+	database.DB.Save(&position)
+	return position
+}
+
+func DeletePositionById(id uint) {
+	database.DB.Delete(&model.Position{}, id)
+}
+
 func GetAllUsers() []model.User {
 	var users []model.User
 	database.DB.Find(&users)

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	logger      *slog.Logger
+	Logger      *slog.Logger
 	logLevel    string
 	environment string
 )
@@ -45,10 +45,10 @@ func Init(level, env string) {
 		handler = slog.NewJSONHandler(os.Stdout, opts)
 	}
 
-	logger = slog.New(handler)
-	slog.SetDefault(logger)
+	Logger = slog.New(handler)
+	slog.SetDefault(Logger)
 
-	logger.Debug("Logger initialized", "level", level)
+	Logger.Debug("Logger initialized", "level", level)
 }
 
 func Env() string {
@@ -60,7 +60,7 @@ func Level() string {
 }
 
 func Get() *slog.Logger {
-	return logger
+	return Logger
 }
 
 // ColorTextHandler custom handler

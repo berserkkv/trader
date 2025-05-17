@@ -1,0 +1,148 @@
+package botFather
+
+import (
+	"github.com/berserkkv/trader/bot"
+	"github.com/berserkkv/trader/model/enum/order"
+	"github.com/berserkkv/trader/model/enum/timeframe"
+	"github.com/berserkkv/trader/service"
+
+	"github.com/berserkkv/trader/service/connector"
+	"github.com/berserkkv/trader/service/tools"
+	"log/slog"
+	"sync"
+	"time"
+)
+
+var (
+	instance *BotFather
+	once     sync.Once
+)
+
+type BotFather struct {
+	bots      map[int64]*bot.Bot
+	botsInPos map[int64]*bot.Bot
+}
+
+func (bf *BotFather) Start() {
+	for {
+		tools.WaitUntilNextAlignedTick(60 * time.Second)
+
+		runTime := time.Now()
+		minute := runTime.Minute()
+		hour := runTime.Hour()
+
+		bf.runBots(minute, hour)
+		service.UpdateAllBots(bf.Bots())
+	}
+}
+
+func (bf *BotFather) runBots(minute int, hour int) {
+	for _, b := range bf.Bots() {
+		if b == nil || b.IsNotActive || b.InPos {
+			continue
+		}
+
+		switch b.TimeFrame {
+		case timeframe.MINUTE_1:
+			bf.runStrategy(b)
+
+		case timeframe.MINUTE_5:
+			if minute%5 == 0 {
+				bf.runStrategy(b)
+			}
+		case timeframe.MINUTE_15:
+			if minute%15 == 0 {
+				bf.runStrategy(b)
+			}
+
+		case timeframe.MINUTE_30:
+			if minute%30 == 0 {
+				bf.runStrategy(b)
+			}
+
+		case timeframe.HOUR_1:
+			if minute == 0 {
+				bf.runStrategy(b)
+			}
+
+		case timeframe.DAY:
+			if hour == 0 && minute == 0 {
+				bf.runStrategy(b)
+			}
+
+		default:
+
+		}
+	}
+}
+
+func (bf *BotFather) runStrategy(b *bot.Bot) {
+	candles := connector.GetKlines(b.Symbol, b.TimeFrame, 50)
+
+	slog.Debug("Fetched klines from API", "length", len(candles))
+
+	cmd := b.Strategy.Start(candles)
+
+	switch cmd {
+	case order.LONG, order.SHORT:
+		err := b.OpenPosition(cmd)
+		if err != nil {
+			slog.Error("Error opening position", "error", err)
+		}
+
+		bf.botsInPos[b.Id] = b
+	case order.WAIT:
+		slog.Debug("No signal yet", "name", b.Name)
+	default:
+		slog.Debug("Order command not identified", "name", b.Name, "command", cmd)
+	}
+
+}
+
+func GetBotFather() *BotFather {
+	once.Do(func() {
+		instance = &BotFather{
+			bots:      make(map[int64]*bot.Bot),
+			botsInPos: make(map[int64]*bot.Bot),
+		}
+	})
+	return instance
+}
+
+func (bf *BotFather) AddBot(bot *bot.Bot) {
+	if bot == nil {
+		slog.Error("bot not added to BotFather, bot is nil")
+		return
+	}
+	if bot.Id == 0 {
+		slog.Error("bot not added to BotFather, bot id is 0")
+		return
+	}
+	if _, exists := bf.bots[bot.Id]; exists {
+		slog.Error("bot not added to BotFather, bot with id already exists", "botId", bot.Id)
+		return
+	}
+
+	bf.bots[bot.Id] = bot
+	slog.Info("bot added successfully to BotFather", "name", bot.StrategyName)
+}
+
+func (bf *BotFather) RemoveBot(id int64) {
+	delete(bf.bots, id)
+}
+
+func (bf *BotFather) Bots() []*bot.Bot {
+	return mapToSlice(bf.bots)
+}
+
+func (bf *BotFather) BotsInPosition() []*bot.Bot {
+	return mapToSlice(bf.botsInPos)
+}
+
+func mapToSlice(m map[int64]*bot.Bot) []*bot.Bot {
+	bots := make([]*bot.Bot, 0, len(m))
+	for _, b := range m {
+		bots = append(bots, b)
+	}
+	return bots
+}

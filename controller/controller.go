@@ -1,12 +1,16 @@
 package controller
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/berserkkv/trader/model"
+	"github.com/berserkkv/trader/repository"
 	"github.com/berserkkv/trader/service"
+	"github.com/berserkkv/trader/service/connector"
 	logger "github.com/berserkkv/trader/tools/log"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -14,8 +18,12 @@ import (
 
 var log *slog.Logger
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello")
+func printBody(c *gin.Context) {
+	b, _ := io.ReadAll(c.Request.Body)
+
+	fmt.Println(string(b))
+
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(b))
 }
 
 func Register() {
@@ -33,7 +41,77 @@ func Register() {
 		api.DELETE("/:id", DeleteUser)
 	}
 
+	positions := r.Group("/api/positions")
+	{
+		positions.GET("", GetPositions)
+		positions.GET("/:id", GetPositionById)
+		positions.POST("", CreatePosition)
+		positions.PUT("", UpdatePosition)
+		positions.DELETE("/:id", DeletePositionById)
+	}
+
+	price := r.Group("/api/prices")
+	{
+		price.GET("", GetSolPrice)
+	}
+
+	orders := r.Group("/api/orders")
+	{
+		orders.GET("", GetOrders)
+		orders.POST("", CreateOrder)
+		orders.PUT("", UpdateOrder)
+
+	}
+
 	r.Run(":8080")
+}
+
+func GetSolPrice(c *gin.Context) {
+	c.JSON(http.StatusOK, connector.GetPrice("SOLUSDT"))
+}
+
+func GetPositions(c *gin.Context) {
+	positions := service.GetAllPosition()
+	c.JSON(http.StatusOK, positions)
+}
+
+func GetPositionById(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	position, error := repository.GetPositionById(uint(id))
+	if error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": error.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, position)
+
+}
+
+func CreatePosition(c *gin.Context) {
+	var position model.Position
+
+	if err := c.ShouldBindJSON(&position); err != nil {
+		fmt.Println("Bind Error:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	newPosition := service.CreatePosition(position)
+	c.JSON(http.StatusCreated, newPosition)
+}
+
+func UpdatePosition(c *gin.Context) {
+	var position model.Position
+	if err := c.ShouldBind(&position); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	updated := repository.UpdatePosition(position)
+	c.JSON(http.StatusCreated, updated)
+}
+
+func DeletePositionById(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	service.DeletePositionById(uint(id))
 }
 
 func GetUsers(c *gin.Context) {

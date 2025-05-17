@@ -5,6 +5,26 @@ import (
 	"github.com/berserkkv/trader/repository"
 )
 
+func GetAllPosition() []model.Position {
+	return repository.GetAllPositions()
+}
+
+func GetPositionById(id uint) (model.Position, error) {
+	return repository.GetPositionById(id)
+}
+
+func CreatePosition(position model.Position) model.Position {
+	return repository.CreatePosition(position)
+}
+
+func UpdatePosition(position model.Position) model.Position {
+	return repository.UpdatePosition(position)
+}
+
+func DeletePositionById(id uint) {
+	repository.DeletePositionById(id)
+}
+
 func GetAll() []model.User {
 	return repository.GetAllUsers()
 }

@@ -1,4 +1,4 @@
-env: "prod"
+env: "local"
 storage_path: "./storage.db"
 http_server:
   address: "0.0.0.0"
@@ -7,4 +7,4 @@ http_server:
   idle_timeout: 30s
   user: "Shabby8574"
 logger:
-  level: info
+  level: debug
