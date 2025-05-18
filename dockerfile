@@ -20,7 +20,7 @@ WORKDIR /root/
 
 # Copy the compiled binary from the build stage
 COPY --from=build /app/trader .
-COPY --from=build /app/users.db /root
+COPY --from=build /app/database.db /root
 COPY --from=build /app/config.yaml /root
 
 # Expose the port the application will listen on
