@@ -15,8 +15,6 @@ func ConnectDB() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&model.User{})
-	db.AutoMigrate(&model.Position{})
 	db.AutoMigrate(&model.Order{})
 	db.AutoMigrate(&bot.Bot{})
 	DB = db

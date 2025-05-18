@@ -59,10 +59,6 @@ func Level() string {
 	return logLevel
 }
 
-func Get() *slog.Logger {
-	return Logger
-}
-
 // ColorTextHandler custom handler
 type ColorTextHandler struct {
 	out    io.Writer

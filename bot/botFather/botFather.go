@@ -4,7 +4,7 @@ import (
 	"github.com/berserkkv/trader/bot"
 	"github.com/berserkkv/trader/model/enum/order"
 	"github.com/berserkkv/trader/model/enum/timeframe"
-	"github.com/berserkkv/trader/service"
+	"github.com/berserkkv/trader/repository"
 
 	"github.com/berserkkv/trader/service/connector"
 	"github.com/berserkkv/trader/service/tools"
@@ -19,8 +19,10 @@ var (
 )
 
 type BotFather struct {
-	bots      map[int64]*bot.Bot
-	botsInPos map[int64]*bot.Bot
+	bots              map[int64]*bot.Bot
+	totalBotsInOrder  int64
+	monitoringRunning bool
+	mu                sync.Mutex
 }
 
 func (bf *BotFather) Start() {
@@ -32,7 +34,7 @@ func (bf *BotFather) Start() {
 		hour := runTime.Hour()
 
 		bf.runBots(minute, hour)
-		service.UpdateAllBots(bf.Bots())
+		repository.UpdateAllBots(bf.Bots())
 	}
 }
 
@@ -88,9 +90,13 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 		err := b.OpenPosition(cmd)
 		if err != nil {
 			slog.Error("Error opening position", "error", err)
+			return
 		}
 
-		bf.botsInPos[b.Id] = b
+		bf.IncreaseTotalBotsInOrder()
+
+		bf.CheckAndStartMonitoring()
+
 	case order.WAIT:
 		slog.Debug("No signal yet", "name", b.Name)
 	default:
@@ -102,8 +108,7 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 func GetBotFather() *BotFather {
 	once.Do(func() {
 		instance = &BotFather{
-			bots:      make(map[int64]*bot.Bot),
-			botsInPos: make(map[int64]*bot.Bot),
+			bots: make(map[int64]*bot.Bot),
 		}
 	})
 	return instance
@@ -127,16 +132,24 @@ func (bf *BotFather) AddBot(bot *bot.Bot) {
 	slog.Info("bot added successfully to BotFather", "name", bot.StrategyName)
 }
 
+func (bf *BotFather) IncreaseTotalBotsInOrder() {
+	bf.mu.Lock()
+	bf.totalBotsInOrder += 1
+	bf.mu.Unlock()
+}
+
+func (bf *BotFather) DecreaseTotalBotsInOrder() {
+	bf.mu.Lock()
+	bf.totalBotsInOrder -= 1
+	bf.mu.Unlock()
+}
+
 func (bf *BotFather) RemoveBot(id int64) {
 	delete(bf.bots, id)
 }
 
 func (bf *BotFather) Bots() []*bot.Bot {
 	return mapToSlice(bf.bots)
-}
-
-func (bf *BotFather) BotsInPosition() []*bot.Bot {
-	return mapToSlice(bf.botsInPos)
 }
 
 func mapToSlice(m map[int64]*bot.Bot) []*bot.Bot {

@@ -1,12 +1,11 @@
 package model
 
-import "time"
+import (
+	"github.com/berserkkv/trader/model/enum/order"
+	"github.com/berserkkv/trader/model/enum/symbol"
+	"time"
+)
 
-type User struct {
-	ID    uint   `json:"id" gorm:"primaryKey"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
 type Candle struct {
 	Time   time.Time
 	Open   float64
@@ -21,32 +20,24 @@ type HeikinAshi struct {
 	Color                  string
 }
 
-type Position struct {
-	ID          int       `json:"id,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	IsOpen      bool      `json:"isOpen,omitempty"`
-	StartedTime time.Time `json:"startedTime,omitempty"`
-	ClosedTime  time.Time `json:"closedTime,omitempty"`
-	CreatedTime time.Time `json:"createdTime,omitempty"`
-	UpdatedTime time.Time `json:"updatedTime,omitempty"`
-	Symbol      string    `json:"symbol" binding:"required"`
-	Side        string    `json:"side,omitempty"`
-	EntryPrice  float64   `json:"entryPrice,omitempty"`
-	ExitPrice   float64   `json:"exitPrice,omitempty"`
-	Quantity    float64   `json:"quantity,omitempty"`
-	ProfitLoss  float64   `json:"profitLoss,omitempty"`
-	StopLoss    float64   `json:"stopLoss,omitempty"`
-	TakeProfit  float64   `json:"takeProfit,omitempty"`
+type Order struct {
+	ID                int64         `gorm:"primaryKey;autoIncrement;not null" json:"id"`
+	Symbol            symbol.Symbol `gorm:"not null" json:"symbol"`
+	Type              order.Command `gorm:"not null" json:"type"`
+	BotID             int64         `gorm:"not null" json:"botId"`
+	EntryPrice        float64       `gorm:"not null" json:"entryPrice"`
+	ExitPrice         float64       `gorm:"not null" json:"exitPrice"`
+	Quantity          float64       `gorm:"not null" json:"quantity"`
+	ProfitLoss        float64       `gorm:"not null" json:"profitLoss"`
+	ProfitLossPercent float64       `gorm:"not null" json:"profitLossPercent"`
+	CreatedTime       time.Time     `gorm:"not null" json:"createdTime"`
+	ClosedTime        time.Time     `gorm:"not null" json:"closedTime"`
+	Fee               float64       `gorm:"not null" json:"fee"`
 }
 
-type Order struct {
-	ID        int       `json:"id,omitempty"`
-	Symbol    string    `json:"symbol,omitempty"`
-	Side      string    `json:"side,omitempty"`
-	Type      string    `json:"type,omitempty"`
-	Price     float64   `json:"price,omitempty"`
-	Quantity  float64   `json:"quantity,omitempty"`
-	Status    string    `json:"status,omitempty"` // "OPEN", "FILLED", "CANCELLED"
-	CreatedAt time.Time `json:"createdAt,omitempty"`
-	FilledAt  time.Time `json:"filledAt,omitempty"`
+type CreateBotRequest struct {
+	Symbol    string  `json:"symbol" binding:"required"`
+	Strategy  string  `json:"strategy" binding:"required"`
+	Timeframe string  `json:"timeframe" binding:"required"`
+	Capital   float64 `json:"capital" binding:"required"`
 }
