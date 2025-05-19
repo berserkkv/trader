@@ -11,6 +11,12 @@ func GelAllOrders() []model.Order {
 	return orders
 }
 
+func GetAllOrdersByBotID(botId int64) []model.Order {
+	var orders []model.Order
+	database.DB.Where("bot_id = ?", botId).Find(&orders)
+	return orders
+}
+
 func CreateOrder(order model.Order) model.Order {
 	database.DB.Create(&order)
 	return order

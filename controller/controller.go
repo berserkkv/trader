@@ -35,8 +35,9 @@ func Register() {
 	{
 		bots.GET("", GetAllBots)
 		bots.POST("", CreateBot)
-		bots.PATCH("/stop/:id", StopBot)
-		bots.PATCH("/start/:id", StartBot)
+		bots.GET("/:id", GetBotById)
+		bots.PATCH("/:id/stop", StopBot)
+		bots.PATCH("/:id/start", StartBot)
 	}
 
 	orders := r.Group("/api/orders")
@@ -44,6 +45,7 @@ func Register() {
 		orders.GET("", GetOrders)
 		orders.POST("", CreateOrder)
 		orders.PUT("", UpdateOrder)
+		orders.GET("/by-bot", GetOrdersByBotId)
 
 	}
 

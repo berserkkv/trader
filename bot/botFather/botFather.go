@@ -1,6 +1,7 @@
 package botFather
 
 import (
+	"fmt"
 	"github.com/berserkkv/trader/bot"
 	"github.com/berserkkv/trader/model/enum/order"
 	"github.com/berserkkv/trader/model/enum/timeframe"
@@ -158,4 +159,29 @@ func mapToSlice(m map[int64]*bot.Bot) []*bot.Bot {
 		bots = append(bots, b)
 	}
 	return bots
+}
+
+func (bf *BotFather) StopBot(id int64) (*bot.Bot, error) {
+	b, ok := bf.bots[id]
+	if !ok {
+		return nil, fmt.Errorf("bot with id %d not found", id)
+	}
+	if b.InPos {
+		return nil, fmt.Errorf("bot with id %d is in position", id)
+	}
+	b.IsNotActive = true
+	return b, nil
+}
+
+func (bf *BotFather) StartBot(id int64) (*bot.Bot, error) {
+	b, ok := bf.bots[id]
+	if !ok {
+		return nil, fmt.Errorf("bot with id %d not found", id)
+	}
+	if b.CurrentCapital <= 10 {
+		return nil, fmt.Errorf("bot with id %d has capital less than 10", id)
+	}
+
+	b.IsNotActive = false
+	return b, nil
 }

@@ -14,8 +14,17 @@ func GetAllBots(c *gin.Context) {
 	c.JSON(http.StatusOK, bots)
 }
 
+func GetBotById(c *gin.Context) {
+	id, ok := extractId(c)
+	if !ok {
+		return
+	}
+	b := service.GetBotById(id)
+	c.JSON(http.StatusOK, b)
+}
+
 func StopBot(c *gin.Context) {
-	botId, ok := extractBorId(c)
+	botId, ok := extractId(c)
 	if !ok {
 		return
 	}
@@ -28,7 +37,7 @@ func StopBot(c *gin.Context) {
 }
 
 func StartBot(c *gin.Context) {
-	botId, ok := extractBorId(c)
+	botId, ok := extractId(c)
 	if !ok {
 		return
 	}
@@ -57,7 +66,7 @@ func CreateBot(c *gin.Context) {
 	c.JSON(200, bot)
 }
 
-func extractBorId(c *gin.Context) (int64, bool) {
+func extractId(c *gin.Context) (int64, bool) {
 	id := c.Param("id")
 	botID, err := strconv.Atoi(id)
 	if err != nil {
