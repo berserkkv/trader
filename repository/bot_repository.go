@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/berserkkv/trader/bot"
 	"github.com/berserkkv/trader/database"
+	"github.com/berserkkv/trader/strategy"
 	"log/slog"
 )
 
@@ -10,6 +11,13 @@ func GetAllBots() []bot.Bot {
 	var bots []bot.Bot
 	database.DB.Find(&bots)
 	return bots
+}
+
+func GetBotById(id int64) *bot.Bot {
+	var b bot.Bot
+	database.DB.First(&b, id)
+	b.Strategy = strategy.GetStrategy(b.StrategyName)
+	return &b
 }
 
 func CreateBot(bot *bot.Bot) (*bot.Bot, error) {

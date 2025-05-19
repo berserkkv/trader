@@ -13,6 +13,9 @@ func CreateOrder(order model.Order) model.Order {
 	return repository.CreateOrder(order)
 }
 
+func GetOrdersByBotId(botId int64) []model.Order {
+	return repository.GetAllOrdersByBotID(botId)
+}
 func UpdateOrder(order model.Order) model.Order {
 	return repository.UpdateOrder(order)
 }

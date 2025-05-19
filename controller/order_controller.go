@@ -7,6 +7,7 @@ import (
 	"github.com/berserkkv/trader/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 func GetOrders(c *gin.Context) {
@@ -35,4 +36,21 @@ func UpdateOrder(c *gin.Context) {
 	}
 	updated := repository.UpdateOrder(order)
 	c.JSON(http.StatusCreated, updated)
+}
+
+func GetOrdersByBotId(c *gin.Context) {
+	botIdParam := c.Query("botId")
+	if botIdParam == "" {
+		c.JSON(400, gin.H{"error": "botId query parameter is required"})
+		return
+	}
+
+	botId, err := strconv.ParseInt(botIdParam, 10, 64)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "botId must be a valid integer"})
+		return
+	}
+
+	orders := service.GetOrdersByBotId(botId)
+	c.JSON(200, orders)
 }

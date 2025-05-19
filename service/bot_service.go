@@ -33,6 +33,10 @@ func GetAllBots() []bot.Bot {
 	return bots
 }
 
+func GetBotById(id int64) *bot.Bot {
+	return repository.GetBotById(id)
+}
+
 func UpdateAllBots(bots []*bot.Bot) []error {
 	return repository.UpdateAllBots(bots)
 }
@@ -42,20 +46,14 @@ func UpdateBot(bot *bot.Bot) (*bot.Bot, error) {
 }
 
 func StopBot(botId int64) error {
-	b := botFather.GetBotFather().Bots()[botId]
+	b, err := botFather.GetBotFather().StopBot(botId)
 
-	if b == nil {
-		slog.Error("error stopping bot, bot is nil", "id", botId)
-		return errors.New("error stopping bot, bot is nil")
-	}
-	if b.InPos {
-		slog.Error("error stopping bot, bot is in position", "id", botId)
-		return errors.New("error stopping bot, bot is in position")
+	if err != nil {
+		slog.Error("error stopping bot", "id", botId)
+		return err
 	}
 
-	b.IsNotActive = true
-
-	_, err := repository.UpdateBot(b)
+	_, err = repository.UpdateBot(b)
 	if err != nil {
 		slog.Error("error updating bot table", "id", botId, "error", err)
 		return err
@@ -65,20 +63,13 @@ func StopBot(botId int64) error {
 }
 
 func StartBot(botId int64) error {
-	b := botFather.GetBotFather().Bots()[botId]
-	if b == nil {
-		slog.Error("Error starting bot, bot is nil", "id", botId)
-		return errors.New("error starting bot, bot is nil")
+	b, err := botFather.GetBotFather().StartBot(botId)
+	if err != nil {
+		slog.Error("Error starting bot", "id", botId)
+		return err
 	}
 
-	if b.CurrentCapital <= 10 {
-		slog.Error("error starting bot, bot's capital <= 10", "id", botId)
-		return errors.New("error starting bot, bot's capital <= 10")
-	}
-
-	b.IsNotActive = false
-
-	_, err := repository.UpdateBot(b)
+	_, err = repository.UpdateBot(b)
 	if err != nil {
 		slog.Error("error starting bot", "id", botId, "error", err)
 		return err
