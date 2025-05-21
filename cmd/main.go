@@ -20,7 +20,7 @@ func main() {
 
 	database.ConnectDB()
 
-	go runBothFather()
+	//go runBothFather()
 	controller.Register()
 
 	slog.Info("Server started on port: 8080")
