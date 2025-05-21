@@ -8,7 +8,7 @@ import (
 	"github.com/berserkkv/trader/model/enum/symbol"
 	"github.com/berserkkv/trader/model/enum/timeframe"
 	"github.com/berserkkv/trader/service"
-	strategy "github.com/berserkkv/trader/strategy/bbha"
+	"github.com/berserkkv/trader/strategy"
 	"github.com/berserkkv/trader/tools/config"
 	logger "github.com/berserkkv/trader/tools/log"
 	"log/slog"
@@ -31,15 +31,44 @@ func runBothFather() {
 	bf := botFather.GetBotFather()
 
 	bbha := strategy.BBHAStrategy{}
+	ha := strategy.HAStrategy{}
+	haSmoothed := strategy.HASmoothedStrategy{}
 
-	b := bot.NewBot(timeframe.MINUTE_5, bbha, symbol.SOLUSDT, 1000)
-	b2 := bot.NewBot(timeframe.MINUTE_1, bbha, symbol.BTCUSDT, 1000)
+	bbha1m := bot.NewBot(timeframe.MINUTE_1, bbha, symbol.SOLUSDT, 1000)
+	ha1m := bot.NewBot(timeframe.MINUTE_1, ha, symbol.SOLUSDT, 1000)
+	haSmoothed1m := bot.NewBot(timeframe.MINUTE_1, haSmoothed, symbol.SOLUSDT, 1000)
 
-	_, err := service.SaveBot(b)
+	bbha15m := bot.NewBot(timeframe.MINUTE_15, bbha, symbol.SOLUSDT, 1000)
+	ha15m := bot.NewBot(timeframe.MINUTE_15, ha, symbol.SOLUSDT, 1000)
+	haSmoothed15m := bot.NewBot(timeframe.MINUTE_15, haSmoothed, symbol.SOLUSDT, 1000)
+
+	_, err := service.SaveBot(bbha1m)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Debug(err.Error())
 	}
-	_, err = service.SaveBot(b2)
+
+	_, err = service.SaveBot(ha1m)
+	if err != nil {
+		slog.Debug(err.Error())
+	}
+
+	_, err = service.SaveBot(haSmoothed1m)
+	if err != nil {
+		slog.Debug(err.Error())
+	}
+
+	_, err = service.SaveBot(bbha15m)
+	if err != nil {
+		slog.Debug(err.Error())
+	}
+	_, err = service.SaveBot(ha15m)
+	if err != nil {
+		slog.Debug(err.Error())
+	}
+	_, err = service.SaveBot(haSmoothed15m)
+	if err != nil {
+		slog.Debug(err.Error())
+	}
 
 	bots := service.GetAllBots()
 

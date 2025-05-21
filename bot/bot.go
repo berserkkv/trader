@@ -200,3 +200,7 @@ func (b *Bot) calculateStatistics(pnl float64) {
 	}
 	b.TotalTrades++
 }
+
+func (b *Bot) String() string {
+	return fmt.Sprintf("{Name: %s, InPos: %t, Capital: %.2f}", b.Name, b.InPos, b.CurrentCapital)
+}

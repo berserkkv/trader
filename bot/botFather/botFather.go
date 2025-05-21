@@ -41,7 +41,9 @@ func (bf *BotFather) Start() {
 
 func (bf *BotFather) runBots(minute int, hour int) {
 	for _, b := range bf.Bots() {
+
 		if b == nil || b.IsNotActive || b.InPos {
+			slog.Info("Bot skipped", "bot", b)
 			continue
 		}
 
@@ -86,6 +88,8 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 
 	cmd := b.Strategy.Start(candles)
 
+	slog.Info("Scanned", "command", cmd, "bot", b)
+
 	switch cmd {
 	case order.LONG, order.SHORT:
 		err := b.OpenPosition(cmd)
@@ -128,9 +132,12 @@ func (bf *BotFather) AddBot(bot *bot.Bot) {
 		slog.Error("bot not added to BotFather, bot with id already exists", "botId", bot.Id)
 		return
 	}
+	if bot.Strategy == nil {
+		slog.Error("bot not added to BotFather, bot strategy is nil")
+	}
 
 	bf.bots[bot.Id] = bot
-	slog.Info("bot added successfully to BotFather", "name", bot.StrategyName)
+	slog.Info("bot added successfully to BotFather", "name", bot.Name)
 }
 
 func (bf *BotFather) IncreaseTotalBotsInOrder() {

@@ -4,6 +4,7 @@ import (
 	"github.com/berserkkv/trader/model"
 	"github.com/berserkkv/trader/model/enum/order"
 	"github.com/berserkkv/trader/ta"
+	"log/slog"
 )
 
 type BBHAStrategy struct{}
@@ -23,6 +24,8 @@ func (s BBHAStrategy) Start(candles []model.Candle) order.Command {
 
 	// BB %B crosses below 0.7 (from ≥0.7 to <0.7)
 	bbCrossDown := bb20[len(bb20)-2] >= 0.7 && bb20[len(bb20)-1] < 0.7
+
+	slog.Info(s.Name(), "bb", bb20[len(bb20)-1], "bb-2", bb20[len(bb20)-2], "HeikinAshi", lastColor, "HA changed", changed)
 
 	if bbCrossUp && changed && lastColor == "green" {
 		return order.LONG

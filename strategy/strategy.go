@@ -3,7 +3,6 @@ package strategy
 import (
 	"github.com/berserkkv/trader/model"
 	"github.com/berserkkv/trader/model/enum/order"
-	strategy "github.com/berserkkv/trader/strategy/bbha"
 	"log/slog"
 )
 
@@ -15,7 +14,11 @@ type Strategy interface {
 func GetStrategy(name string) Strategy {
 	switch name {
 	case "BBHA":
-		return &strategy.BBHAStrategy{}
+		return &BBHAStrategy{}
+	case "HASmoothed":
+		return &HASmoothedStrategy{}
+	case "HA":
+		return &HAStrategy{}
 	default:
 		slog.Error("Strategy not found", "name", name)
 		return nil
