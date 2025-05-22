@@ -31,28 +31,35 @@ func runBothFather() {
 	bf := botFather.GetBotFather()
 
 	bbha := strategy.BBHAStrategy{}
-	ha := strategy.HAStrategy{}
+	//ha := strategy.HAStrategy{}
 	haSmoothed := strategy.HASmoothedStrategy{}
+	haema := strategy.HAEMAStrategy{}
+	haSmoothedEma := strategy.HASmoothedEMAStrategy{}
 
-	bbha1m := bot.NewBot(timeframe.MINUTE_1, bbha, symbol.SOLUSDT, 100)
-	ha1m := bot.NewBot(timeframe.MINUTE_1, ha, symbol.SOLUSDT, 100)
-	haSmoothed1m := bot.NewBot(timeframe.MINUTE_1, haSmoothed, symbol.SOLUSDT, 100)
+	haema1m := bot.NewBot(timeframe.MINUTE_1, haema, symbol.SOLUSDT, 100)
+	haSmoothedEma1m := bot.NewBot(timeframe.MINUTE_1, haSmoothedEma, symbol.SOLUSDT, 100)
 
+	haema15m := bot.NewBot(timeframe.MINUTE_15, haema, symbol.SOLUSDT, 100)
+	haSmoothedEma15m := bot.NewBot(timeframe.MINUTE_15, haSmoothedEma, symbol.SOLUSDT, 100)
 	bbha15m := bot.NewBot(timeframe.MINUTE_15, bbha, symbol.SOLUSDT, 100)
-	ha15m := bot.NewBot(timeframe.MINUTE_15, ha, symbol.SOLUSDT, 100)
 	haSmoothed15m := bot.NewBot(timeframe.MINUTE_15, haSmoothed, symbol.SOLUSDT, 100)
 
-	_, err := service.SaveBot(bbha1m)
+	_, err := service.SaveBot(haema1m)
 	if err != nil {
 		slog.Debug(err.Error())
 	}
 
-	_, err = service.SaveBot(ha1m)
+	_, err = service.SaveBot(haSmoothedEma1m)
 	if err != nil {
 		slog.Debug(err.Error())
 	}
 
-	_, err = service.SaveBot(haSmoothed1m)
+	_, err = service.SaveBot(haema15m)
+	if err != nil {
+		slog.Debug(err.Error())
+	}
+
+	_, err = service.SaveBot(haSmoothedEma15m)
 	if err != nil {
 		slog.Debug(err.Error())
 	}
@@ -61,10 +68,7 @@ func runBothFather() {
 	if err != nil {
 		slog.Debug(err.Error())
 	}
-	_, err = service.SaveBot(ha15m)
-	if err != nil {
-		slog.Debug(err.Error())
-	}
+
 	_, err = service.SaveBot(haSmoothed15m)
 	if err != nil {
 		slog.Debug(err.Error())
