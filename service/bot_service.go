@@ -21,6 +21,9 @@ func SaveBot(bot *bot.Bot) (*bot.Bot, error) {
 	if bot.Symbol == "" {
 		return nil, errors.New("bot not saved, symbol is empty")
 	}
+	if bot.Strategy == nil {
+		return nil, errors.New("bot not saved, strategy is nil")
+	}
 
 	return repository.CreateBot(bot)
 }
