@@ -24,6 +24,7 @@ type Bot struct {
 	Strategy          strategy.Strategy   `gorm:"-" json:"-"` // Skip interface for DB and JSON
 	InitialCapital    float64             `gorm:"not null" json:"initialCapital"`
 	CurrentCapital    float64             `gorm:"not null" json:"currentCapital"`
+	LastScanned       time.Time           `gorm:"not null" json:"lastScanned"`
 	TotalWins         int64               `json:"totalWins"`
 	TotalLosses       int64               `json:"totalLosses"`
 	TotalTrades       int64               `json:"totalTrades"`

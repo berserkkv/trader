@@ -18,7 +18,7 @@ func (s HAStrategy) Start(candles []model.Candle) order.Command {
 
 	changed, color := ta.DetectHeikinAshiColorChange(ha)
 
-	slog.Info(s.Name(), "changed", changed, "color", color)
+	slog.Debug(s.Name(), "changed", changed, "color", color)
 
 	if changed {
 		if color == "green" {

@@ -81,6 +81,10 @@ func StartBot(botId int64) error {
 func CreateBot(tradingSymbol, strategyName, tradingTimeFrame string, capital float64) (*bot.Bot, error) {
 
 	tradingStrategy := strategy.GetStrategy(strategyName)
+	if tradingStrategy == nil {
+		return nil, errors.New("strategy not found")
+	}
+
 	tf, err := timeframe.Parse(tradingTimeFrame)
 	if err != nil {
 		return nil, err

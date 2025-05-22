@@ -108,6 +108,8 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 		slog.Debug("Order command not identified", "name", b.Name, "command", cmd)
 	}
 
+	b.LastScanned = time.Now()
+
 }
 
 func GetBotFather() *BotFather {

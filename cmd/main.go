@@ -34,13 +34,13 @@ func runBothFather() {
 	ha := strategy.HAStrategy{}
 	haSmoothed := strategy.HASmoothedStrategy{}
 
-	bbha1m := bot.NewBot(timeframe.MINUTE_1, bbha, symbol.SOLUSDT, 1000)
-	ha1m := bot.NewBot(timeframe.MINUTE_1, ha, symbol.SOLUSDT, 1000)
-	haSmoothed1m := bot.NewBot(timeframe.MINUTE_1, haSmoothed, symbol.SOLUSDT, 1000)
+	bbha1m := bot.NewBot(timeframe.MINUTE_1, bbha, symbol.SOLUSDT, 100)
+	ha1m := bot.NewBot(timeframe.MINUTE_1, ha, symbol.SOLUSDT, 100)
+	haSmoothed1m := bot.NewBot(timeframe.MINUTE_1, haSmoothed, symbol.SOLUSDT, 100)
 
-	bbha15m := bot.NewBot(timeframe.MINUTE_15, bbha, symbol.SOLUSDT, 1000)
-	ha15m := bot.NewBot(timeframe.MINUTE_15, ha, symbol.SOLUSDT, 1000)
-	haSmoothed15m := bot.NewBot(timeframe.MINUTE_15, haSmoothed, symbol.SOLUSDT, 1000)
+	bbha15m := bot.NewBot(timeframe.MINUTE_15, bbha, symbol.SOLUSDT, 100)
+	ha15m := bot.NewBot(timeframe.MINUTE_15, ha, symbol.SOLUSDT, 100)
+	haSmoothed15m := bot.NewBot(timeframe.MINUTE_15, haSmoothed, symbol.SOLUSDT, 100)
 
 	_, err := service.SaveBot(bbha1m)
 	if err != nil {
