@@ -85,5 +85,9 @@ func GetKlines(smb symbol.Symbol, interval timeframe.Timeframe, limit int) []mod
 		}
 	}
 
-	return candles
+	if len(candles) == 0 {
+		return candles
+	}
+
+	return candles[:len(candles)-1]
 }
