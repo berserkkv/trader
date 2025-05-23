@@ -63,8 +63,8 @@ func (b *Bot) OpenPosition(command order.Command) error {
 	}
 	price := connector.GetPrice(b.Symbol)
 
-	stopLossPercent := 0.2
-	takeProfitPercent := 0.25
+	stopLossPercent := 0.5
+	takeProfitPercent := 1.5
 
 	if command == order.LONG {
 		b.OrderStopLoss = calculator.CalculateStopLossWithPercent(price, stopLossPercent, false)
@@ -73,7 +73,7 @@ func (b *Bot) OpenPosition(command order.Command) error {
 		b.OrderStopLoss = calculator.CalculateStopLossWithPercent(price, stopLossPercent, true)
 		b.OrderTakeProfit = calculator.CalculateTakeProfitWithPercent(price, takeProfitPercent, true)
 	}
-	fee := calculator.CalculateTakerFee(b.CurrentCapital)
+	fee := calculator.CalculateMakerFee(b.CurrentCapital)
 
 	b.CurrentCapital -= fee
 
@@ -102,7 +102,7 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 	var pnl float64
 	var pnlPercent float64
 
-	fee := calculator.CalculateTakerFee(b.OrderCapital)
+	fee := calculator.CalculateMakerFee(b.OrderCapital)
 	b.OrderCapital -= fee
 
 	if b.OrderType == order.LONG {

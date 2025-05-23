@@ -5,9 +5,10 @@ import (
 	"github.com/berserkkv/trader/model"
 )
 
-func GelAllOrders() []model.Order {
+func GetAllOrders() []model.Order {
 	var orders []model.Order
-	database.DB.Find(&orders)
+	database.DB.Order("closed_time DESC").Find(&orders)
+
 	return orders
 }
 

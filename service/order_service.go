@@ -6,7 +6,11 @@ import (
 )
 
 func GetAllOrders() []model.Order {
-	return repository.GelAllOrders()
+	orders := repository.GetAllOrders()
+	if len(orders) > 20 {
+		return orders[:20]
+	}
+	return orders
 }
 
 func CreateOrder(order model.Order) model.Order {

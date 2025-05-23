@@ -23,6 +23,8 @@ func GetStrategy(name string) Strategy {
 		return &HAEMAStrategy{}
 	case "HASmoothedEMA":
 		return &HASmoothedEMAStrategy{}
+	case "BBHA2":
+		return &BBHA2Strategy{}
 	default:
 		slog.Error("Strategy not found", "name", name)
 		return nil

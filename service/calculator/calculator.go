@@ -2,6 +2,7 @@ package calculator
 
 const (
 	takerFeeRate float64 = 0.0004 // 0.04%
+	makerFeeRate float64 = 0.0002 // 0.02%
 )
 
 func CalculateStopLossWithPercent(price float64, percent float64, isShort bool) float64 {
@@ -27,6 +28,10 @@ func CalculateBuyQuantity(price float64, capital float64) float64 {
 
 func CalculateTakerFee(price float64) float64 {
 	return takerFeeRate * price
+}
+
+func CalculateMakerFee(price float64) float64 {
+	return price * makerFeeRate
 }
 
 func CalculatePNLForLong(price float64, capital float64, quantity float64) float64 {
