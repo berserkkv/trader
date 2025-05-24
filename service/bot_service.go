@@ -81,7 +81,7 @@ func StartBot(botId int64) error {
 	return nil
 }
 
-func CreateBot(tradingSymbol, strategyName, tradingTimeFrame string, capital float64) (*bot.Bot, error) {
+func CreateBot(tradingSymbol, strategyName, tradingTimeFrame string, capital, leverage, takeProfit, stopLoss float64) (*bot.Bot, error) {
 
 	tradingStrategy := strategy.GetStrategy(strategyName)
 	if tradingStrategy == nil {
@@ -97,7 +97,7 @@ func CreateBot(tradingSymbol, strategyName, tradingTimeFrame string, capital flo
 		return nil, err
 	}
 
-	b := bot.NewBot(tf, tradingStrategy, smb, capital)
+	b := bot.NewBot(tf, tradingStrategy, smb, capital, leverage, takeProfit, stopLoss)
 
 	savedBot, err := repository.CreateBot(b)
 	if err != nil {

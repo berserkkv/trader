@@ -33,11 +33,15 @@ type Order struct {
 	CreatedTime       time.Time     `gorm:"not null" json:"createdTime"`
 	ClosedTime        time.Time     `gorm:"not null" json:"closedTime"`
 	Fee               float64       `gorm:"not null" json:"fee"`
+	Leverage          float64       `gorm:"not null" json:"leverage"`
 }
 
 type CreateBotRequest struct {
-	Symbol    string  `json:"symbol" binding:"required"`
-	Strategy  string  `json:"strategy" binding:"required"`
-	Timeframe string  `json:"timeframe" binding:"required"`
-	Capital   float64 `json:"capital" binding:"required"`
+	Symbol     string  `json:"symbol" binding:"required"`
+	Strategy   string  `json:"strategy" binding:"required"`
+	Timeframe  string  `json:"timeframe" binding:"required"`
+	Capital    float64 `json:"capital" binding:"required"`
+	Leverage   float64 `json:"leverage" binding:"required"`
+	TakeProfit float64 `json:"takeProfit" binding:"required"`
+	StopLoss   float64 `json:"stopLoss" binding:"required"`
 }

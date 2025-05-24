@@ -30,71 +30,33 @@ func main() {
 func runBothFather() {
 	bf := botFather.GetBotFather()
 
-	bbha := strategy.BBHAStrategy{}
-	//ha := strategy.HAStrategy{}
-	haSmoothed := strategy.HASmoothedStrategy{}
-	haema := strategy.HAEMAStrategy{}
-	haSmoothedEma := strategy.HASmoothedEMAStrategy{}
-	bbha2 := strategy.BBHA2Strategy{}
+	capital := 100.0
+	leverage := 10.0
+	takeProfit := 1.0
+	stopLoss := 1.0
 
-	haema1m := bot.NewBot(timeframe.MINUTE_1, haema, symbol.SOLUSDT, 100)
-	haSmoothedEma1m := bot.NewBot(timeframe.MINUTE_1, haSmoothedEma, symbol.SOLUSDT, 100)
-	bbha2_1m := bot.NewBot(timeframe.MINUTE_1, bbha2, symbol.SOLUSDT, 100)
-
-	bbha2_5m := bot.NewBot(timeframe.MINUTE_5, bbha2, symbol.SOLUSDT, 100)
-
-	haema15m := bot.NewBot(timeframe.MINUTE_15, haema, symbol.SOLUSDT, 100)
-	haSmoothedEma15m := bot.NewBot(timeframe.MINUTE_15, haSmoothedEma, symbol.SOLUSDT, 100)
-	bbha15m := bot.NewBot(timeframe.MINUTE_15, bbha, symbol.SOLUSDT, 100)
-	haSmoothed15m := bot.NewBot(timeframe.MINUTE_15, haSmoothed, symbol.SOLUSDT, 100)
-	bbha2_15m := bot.NewBot(timeframe.MINUTE_15, bbha2, symbol.SOLUSDT, 100)
-
-	// 1 min
-	_, err := service.SaveBot(haema1m)
-	if err != nil {
-		slog.Debug(err.Error())
+	sts := []strategy.Strategy{
+		strategy.HASmoothedStrategy{},
+		strategy.HAEMAStrategy{},
+		strategy.BBHAStrategy{},
+		strategy.BBHA2Strategy{},
+		strategy.HASmoothedEMAStrategy{},
+	}
+	tfs := []timeframe.Timeframe{
+		timeframe.MINUTE_1,
+		timeframe.MINUTE_5,
+		timeframe.MINUTE_15,
 	}
 
-	_, err = service.SaveBot(haSmoothedEma1m)
-	if err != nil {
-		slog.Debug(err.Error())
-	}
+	for _, tf := range tfs {
+		for _, st := range sts {
+			b := bot.NewBot(tf, st, symbol.SOLUSDT, capital, leverage, takeProfit, stopLoss)
 
-	_, err = service.SaveBot(bbha2_1m)
-	if err != nil {
-		slog.Debug(err.Error())
-	}
-
-	// 5 min
-	_, err = service.SaveBot(bbha2_5m)
-	if err != nil {
-		slog.Debug(err.Error())
-	}
-
-	// 15 min
-	_, err = service.SaveBot(haema15m)
-	if err != nil {
-		slog.Debug(err.Error())
-	}
-
-	_, err = service.SaveBot(haSmoothedEma15m)
-	if err != nil {
-		slog.Debug(err.Error())
-	}
-
-	_, err = service.SaveBot(bbha15m)
-	if err != nil {
-		slog.Debug(err.Error())
-	}
-
-	_, err = service.SaveBot(haSmoothed15m)
-	if err != nil {
-		slog.Debug(err.Error())
-	}
-
-	_, err = service.SaveBot(bbha2_15m)
-	if err != nil {
-		slog.Debug(err.Error())
+			_, err := service.SaveBot(b)
+			if err != nil {
+				slog.Debug("Failed to save bot: ", err)
+			}
+		}
 	}
 
 	bots := service.GetAllBots()
@@ -107,6 +69,5 @@ func runBothFather() {
 	}
 
 	go bf.CheckAndStartMonitoring()
-
 	bf.Start()
 }

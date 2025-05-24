@@ -58,7 +58,7 @@ func CreateBot(c *gin.Context) {
 		return
 	}
 
-	bot, err := service.CreateBot(req.Symbol, req.Strategy, req.Timeframe, req.Capital)
+	bot, err := service.CreateBot(req.Symbol, req.Strategy, req.Timeframe, req.Capital, req.Leverage, req.TakeProfit, req.StopLoss)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Could not create bot", "details": err.Error()})
 		return

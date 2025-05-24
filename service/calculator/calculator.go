@@ -42,10 +42,10 @@ func CalculatePNLForShort(price float64, capital float64, quantity float64) floa
 	return capital - (price * quantity)
 }
 
-func CalculatePNLPercentForLong(entryPrice float64, exitPrice float64) float64 {
-	return ((exitPrice - entryPrice) / entryPrice) * 100
+func CalculateRoeForLong(entryPrice, exitPrice, leverage float64) float64 {
+	return ((exitPrice - entryPrice) / entryPrice) * 100 * leverage
 }
 
-func CalculatePNLPercentForShort(entryPrice float64, exitPrice float64) float64 {
-	return ((entryPrice - exitPrice) / entryPrice) * 100
+func CalculateRoeForShort(entryPrice, exitPrice, leverage float64) float64 {
+	return ((entryPrice - exitPrice) / entryPrice) * 100 * leverage
 }

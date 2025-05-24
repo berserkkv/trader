@@ -15,6 +15,9 @@ func ConnectDB() {
 	if err != nil {
 		panic("failed to connect database")
 	}
+	db.Migrator().DropTable(&model.Order{})
+	db.Migrator().DropTable(&bot.Bot{})
+
 	db.AutoMigrate(&model.Order{})
 	db.AutoMigrate(&bot.Bot{})
 	DB = db

@@ -58,6 +58,14 @@ func (bf *BotFather) monitorPosition() {
 
 				closedOrders = append(closedOrders, closedOrder)
 				slog.Debug("Position closed, bot ready for new orders", "botName", b.Name)
+			} else {
+				b.UpdatePnlAndRoe(curPrice)
+				b.ShiftStopLoss()
+			}
+			b.OrderScannedTime = time.Now()
+			_, err := repository.UpdateBot(b)
+			if err != nil {
+				slog.Error("Error updating bot", "error", err.Error(), "botName", b.Name)
 			}
 		}
 

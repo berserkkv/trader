@@ -15,35 +15,42 @@ import (
 )
 
 type Bot struct {
-	Id                int64               `gorm:"primaryKey" json:"id"`
-	Name              string              `gorm:"not null;unique" json:"name"`
-	Symbol            symbol.Symbol       `gorm:"not null;check:name <> ''" json:"symbol"`
-	IsNotActive       bool                `gorm:"default:false" json:"isNotActive"`
-	TimeFrame         timeframe.Timeframe `gorm:"not null" json:"timeFrame"`
-	StrategyName      string              `gorm:"not null" json:"strategyName"`
-	Strategy          strategy.Strategy   `gorm:"-" json:"-"` // Skip interface for DB and JSON
-	InitialCapital    float64             `gorm:"not null" json:"initialCapital"`
-	CurrentCapital    float64             `gorm:"not null" json:"currentCapital"`
-	LastScanned       time.Time           `gorm:"not null" json:"lastScanned"`
-	TotalWins         int64               `json:"totalWins"`
-	TotalLosses       int64               `json:"totalLosses"`
-	TotalTrades       int64               `json:"totalTrades"`
-	CurrentWinsStreak int64               `json:"currentWinsStreak"`
-	CurrentLossStreak int64               `json:"currentLossStreak"`
-	MaxWinsStreak     int64               `json:"maxWinsStreak"`
-	MaxLossStreak     int64               `json:"maxLossStreak"`
-	InPos             bool                `gorm:"default:false" json:"inPos"`
-	OrderType         order.Command       `json:"orderType"`
-	OrderCreatedTime  time.Time           `json:"orderCreatedTime"`
-	OrderQuantity     float64             `json:"orderQuantity"`
-	OrderCapital      float64             `json:"orderCapital"`
-	OrderEntryPrice   float64             `json:"orderEntryPrice"`
-	OrderStopLoss     float64             `json:"orderStopLoss"`
-	OrderTakeProfit   float64             `json:"orderTakeProfit"`
-	OrderFee          float64             `json:"orderFee"`
+	Id                       int64               `gorm:"primaryKey" json:"id"`
+	Name                     string              `gorm:"not null;unique" json:"name"`
+	Symbol                   symbol.Symbol       `gorm:"not null;check:name <> ''" json:"symbol"`
+	IsNotActive              bool                `gorm:"default:false" json:"isNotActive"`
+	TimeFrame                timeframe.Timeframe `gorm:"not null" json:"timeFrame"`
+	StrategyName             string              `gorm:"not null" json:"strategyName"`
+	Strategy                 strategy.Strategy   `gorm:"-" json:"-"` // Skip interface for DB and JSON
+	InitialCapital           float64             `gorm:"not null" json:"initialCapital"`
+	CurrentCapital           float64             `gorm:"not null" json:"currentCapital"`
+	LastScanned              time.Time           `gorm:"not null" json:"lastScanned"`
+	TotalWins                int64               `json:"totalWins"`
+	TotalLosses              int64               `json:"totalLosses"`
+	TotalTrades              int64               `json:"totalTrades"`
+	CurrentWinsStreak        int64               `json:"currentWinsStreak"`
+	CurrentLossStreak        int64               `json:"currentLossStreak"`
+	MaxWinsStreak            int64               `json:"maxWinsStreak"`
+	MaxLossStreak            int64               `json:"maxLossStreak"`
+	Leverage                 float64             `json:"leverage"`
+	TakeProfit               float64             `json:"takeProfit"`
+	StopLoss                 float64             `json:"stopLoss"`
+	InPos                    bool                `gorm:"default:false" json:"inPos"`
+	OrderType                order.Command       `json:"orderType"`
+	OrderCreatedTime         time.Time           `json:"orderCreatedTime"`
+	OrderScannedTime         time.Time           `json:"orderScannedTime"`
+	OrderQuantity            float64             `json:"orderQuantity"`
+	OrderCapital             float64             `json:"orderCapital"`
+	OrderCapitalWithLeverage float64             `json:"orderCapitalWithLeverage"`
+	OrderEntryPrice          float64             `json:"orderEntryPrice"`
+	OrderStopLoss            float64             `json:"orderStopLoss"`
+	OrderTakeProfit          float64             `json:"orderTakeProfit"`
+	OrderFee                 float64             `json:"orderFee"`
+	Pnl                      float64             `json:"pnl"`
+	Roe                      float64             `json:"roe"`
 }
 
-func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symbol, capital float64) *Bot {
+func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symbol, capital, leverage, takeProfit, stopLoss float64) *Bot {
 	name := st.Name() + "_" + string(timeframe) + "_" + string(smb)
 	return &Bot{
 		Name:           name,
@@ -53,6 +60,9 @@ func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symb
 		Strategy:       st,
 		InitialCapital: capital,
 		CurrentCapital: capital,
+		Leverage:       leverage,
+		TakeProfit:     takeProfit,
+		StopLoss:       stopLoss,
 	}
 
 }
@@ -77,13 +87,17 @@ func (b *Bot) OpenPosition(command order.Command) error {
 
 	b.CurrentCapital -= fee
 
-	b.OrderQuantity = calculator.CalculateBuyQuantity(price, b.CurrentCapital)
+	b.OrderCapitalWithLeverage = b.Leverage * b.CurrentCapital
+
+	now := time.Now()
+	b.OrderQuantity = calculator.CalculateBuyQuantity(price, b.OrderCapitalWithLeverage)
 	b.OrderEntryPrice = price
 	b.OrderCapital = b.CurrentCapital
-	b.CurrentCapital = 0
+	// b.CurrentCapital = 0
 	b.InPos = true
 	b.OrderType = command
-	b.OrderCreatedTime = time.Now()
+	b.OrderCreatedTime = now
+	b.OrderScannedTime = now
 	b.OrderFee = fee
 
 	slog.Info("Position opened",
@@ -103,14 +117,15 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 	var pnlPercent float64
 
 	fee := calculator.CalculateMakerFee(b.OrderCapital)
+	b.OrderCapitalWithLeverage -= fee
 	b.OrderCapital -= fee
 
 	if b.OrderType == order.LONG {
-		pnl = calculator.CalculatePNLForLong(curPrice, b.OrderCapital, b.OrderQuantity)
-		pnlPercent = calculator.CalculatePNLPercentForLong(b.OrderEntryPrice, curPrice)
+		pnl = calculator.CalculatePNLForLong(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity)
+		pnlPercent = calculator.CalculateRoeForLong(b.OrderEntryPrice, curPrice, b.Leverage)
 	} else if b.OrderType == order.SHORT {
-		pnl = calculator.CalculatePNLForShort(curPrice, b.OrderCapital, b.OrderQuantity)
-		pnlPercent = calculator.CalculatePNLPercentForShort(b.OrderEntryPrice, curPrice)
+		pnl = calculator.CalculatePNLForShort(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity)
+		pnlPercent = calculator.CalculateRoeForShort(b.OrderEntryPrice, curPrice, b.Leverage)
 	} else {
 		return model.Order{}, fmt.Errorf("invalid order type")
 	}
@@ -133,6 +148,7 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 		CreatedTime:       b.OrderCreatedTime,
 		ClosedTime:        time.Now(),
 		Fee:               b.OrderFee,
+		Leverage:          b.Leverage,
 	}
 
 	b.InPos = false
@@ -141,9 +157,13 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 	b.OrderTakeProfit = 0
 	b.OrderType = ""
 	b.OrderCapital = 0
+	b.OrderCapitalWithLeverage = 0
 	b.OrderCreatedTime = time.Time{}
 	b.OrderQuantity = 0
 	b.OrderFee = 0
+	b.OrderScannedTime = time.Time{}
+	b.Pnl = 0
+	b.Roe = 0
 
 	return closedOrder, nil
 }
@@ -200,6 +220,52 @@ func (b *Bot) calculateStatistics(pnl float64) {
 		b.MaxLossStreak = max(b.MaxLossStreak, b.CurrentLossStreak)
 	}
 	b.TotalTrades++
+}
+
+func (b *Bot) calculateRoe(curPrice float64) float64 {
+	if b.OrderType == order.LONG {
+		return calculator.CalculateRoeForLong(b.OrderEntryPrice, curPrice, b.Leverage)
+	} else if b.OrderType == order.SHORT {
+		return calculator.CalculateRoeForShort(b.OrderEntryPrice, curPrice, b.Leverage)
+	}
+	return 0
+}
+
+func (b *Bot) calculatePnl(curPrice float64) float64 {
+	if b.OrderType == order.LONG {
+		return calculator.CalculatePNLForLong(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity)
+	} else if b.OrderType == order.SHORT {
+		return calculator.CalculatePNLForShort(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity)
+	}
+	return 0
+}
+
+func (b *Bot) UpdatePnlAndRoe(curPrice float64) {
+	b.Roe = b.calculateRoe(curPrice)
+	b.Pnl = b.calculatePnl(curPrice)
+}
+
+func (b *Bot) ShiftStopLoss() {
+	realROE := b.Roe / b.Leverage
+
+	if realROE >= 0.2 {
+		// Convert to decimal before calculations
+		pnlDecimal := realROE / 100.0
+
+		// Shift stop loss to half the profit
+		shift := pnlDecimal / 2.0
+
+		newStopLoss := b.OrderEntryPrice * (1.0 + shift)
+		if b.OrderType == order.LONG {
+			if newStopLoss > b.StopLoss {
+				b.StopLoss = newStopLoss
+			}
+		} else if b.OrderType == order.SHORT {
+			if newStopLoss < b.StopLoss {
+				b.StopLoss = newStopLoss
+			}
+		}
+	}
 }
 
 func (b *Bot) String() string {
