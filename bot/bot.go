@@ -258,11 +258,11 @@ func (b *Bot) ShiftStopLoss() {
 		newStopLoss := b.OrderEntryPrice * (1.0 + shift)
 		if b.OrderType == order.LONG {
 			if newStopLoss > b.StopLoss {
-				b.StopLoss = newStopLoss
+				b.OrderStopLoss = newStopLoss
 			}
 		} else if b.OrderType == order.SHORT {
 			if newStopLoss < b.StopLoss {
-				b.StopLoss = newStopLoss
+				b.OrderStopLoss = newStopLoss
 			}
 		}
 	}
