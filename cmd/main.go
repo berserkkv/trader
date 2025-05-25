@@ -36,11 +36,13 @@ func runBothFather() {
 	stopLoss := 1.0
 
 	sts := []strategy.Strategy{
+		strategy.HAStrategy{},
 		strategy.HASmoothedStrategy{},
 		strategy.HAEMAStrategy{},
 		strategy.BBHAStrategy{},
 		strategy.BBHA2Strategy{},
 		strategy.HASmoothedEMAStrategy{},
+		strategy.BBHA3{},
 	}
 	tfs := []timeframe.Timeframe{
 		timeframe.MINUTE_1,
@@ -48,14 +50,24 @@ func runBothFather() {
 		timeframe.MINUTE_15,
 	}
 
+	smbs := []symbol.Symbol{
+		symbol.SOLUSDT,
+		symbol.ETHUSDT,
+		symbol.BTCUSDT,
+		symbol.BNBUSDT,
+	}
+
 	for _, tf := range tfs {
 		for _, st := range sts {
-			b := bot.NewBot(tf, st, symbol.SOLUSDT, capital, leverage, takeProfit, stopLoss)
+			for _, smb := range smbs {
+				b := bot.NewBot(tf, st, smb, capital, leverage, takeProfit, stopLoss)
 
-			_, err := service.SaveBot(b)
-			if err != nil {
-				slog.Debug("Failed to save bot: ", err)
+				_, err := service.SaveBot(b)
+				if err != nil {
+					slog.Debug("Failed to save bot: ", err)
+				}
 			}
+
 		}
 	}
 

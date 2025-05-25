@@ -167,11 +167,13 @@ func (b *Bot) ShiftStopLoss() {
 		if b.OrderType == order.LONG {
 			newStopLoss = b.OrderEntryPrice * (1.0 + shift)
 			if newStopLoss > b.OrderStopLoss {
+				slog.Debug("Stop loss shifted", "prevStopLoss", b.OrderStopLoss, "newStopLoss", newStopLoss)
 				b.OrderStopLoss = newStopLoss
 			}
 		} else if b.OrderType == order.SHORT {
 			newStopLoss = b.OrderEntryPrice * (1.0 - shift)
 			if newStopLoss < b.OrderStopLoss {
+				slog.Debug("Stop loss shifted", "prevStopLoss", b.OrderStopLoss, "newStopLoss", newStopLoss)
 				b.OrderStopLoss = newStopLoss
 			}
 		}
@@ -186,10 +188,12 @@ func (b *Bot) UpdatePnlAndRoe(curPrice float64) {
 func (b *Bot) ShouldClosePosition(curPrice float64) bool {
 	if b.OrderType == order.LONG {
 		if curPrice >= b.OrderTakeProfit || curPrice <= b.OrderStopLoss {
+			slog.Debug("Return true to close position", "curPrice", curPrice, "takeProfit", b.OrderTakeProfit, "stopLoss", b.OrderStopLoss, "orderType", b.OrderType)
 			return true
 		}
 	} else {
 		if curPrice <= b.OrderTakeProfit || curPrice >= b.OrderStopLoss {
+			slog.Debug("Return true to close position", "curPrice", curPrice, "takeProfit", b.OrderTakeProfit, "stopLoss", b.OrderStopLoss, "orderType", b.OrderType)
 			return true
 		}
 	}

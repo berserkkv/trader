@@ -75,7 +75,7 @@ func (BinanceConnector) GetCandles(smb symbol.Symbol, interval timeframe.Timefra
 		open, _ := strconv.ParseFloat(k[1].(string), 64)
 		high, _ := strconv.ParseFloat(k[2].(string), 64)
 		low, _ := strconv.ParseFloat(k[3].(string), 64)
-		close, _ := strconv.ParseFloat(k[4].(string), 64)
+		closePrice, _ := strconv.ParseFloat(k[4].(string), 64)
 		volume, _ := strconv.ParseFloat(k[5].(string), 64)
 
 		candles[i] = model.Candle{
@@ -83,7 +83,7 @@ func (BinanceConnector) GetCandles(smb symbol.Symbol, interval timeframe.Timefra
 			Open:   open,
 			High:   high,
 			Low:    low,
-			Close:  close,
+			Close:  closePrice,
 			Volume: volume,
 		}
 	}
