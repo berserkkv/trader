@@ -1,51 +1,46 @@
 package calculator
 
-import "testing"
+import (
+	"testing"
 
-func TestCalculateStopLossWithPercent(t *testing.T) {
-	tests := []struct {
-		name     string
-		price    float64
-		percent  float64
-		isShort  bool
-		expected float64
-	}{
-		{"Long position - 5%", 100.0, 5.0, false, 95.0},
-		{"Short position - 5%", 100.0, 5.0, true, 105.0},
-		{"Long position - 10%", 200.0, 10.0, false, 180.0},
-		{"Short position - 10%", 200.0, 10.0, true, 220.0},
-	}
+	"github.com/berserkkv/trader/model/enum/order"
+	"github.com/stretchr/testify/assert"
+)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := CalculateStopLossWithPercent(tt.price, tt.percent, tt.isShort)
-			if result != tt.expected {
-				t.Errorf("got %v, want %v", result, tt.expected)
-			}
-		})
-	}
+func TestCalculateStopLoss(t *testing.T) {
+	assert.Equal(t, 110.0, CalculateStopLoss(100.0, 10.0, order.SHORT))
+	assert.Equal(t, 90.0, CalculateStopLoss(100.0, 10.0, order.LONG))
 }
 
-func TestCalculateTakeProfitWithPercent(t *testing.T) {
-	tests := []struct {
-		name     string
-		price    float64
-		percent  float64
-		isShort  bool
-		expected float64
-	}{
-		{"Long position - 5%", 100.0, 5.0, false, 105.0},
-		{"Short position - 5%", 100.0, 5.0, true, 95.0},
-		{"Long position - 10%", 200.0, 10.0, false, 220.0},
-		{"Short position - 10%", 200.0, 10.0, true, 180.0},
-	}
+func TestCalculateTakeProfit(t *testing.T) {
+	assert.Equal(t, 90.0, CalculateTakeProfit(100, 10, order.SHORT))
+	assert.Equal(t, 110.0, CalculateTakeProfit(100, 10, order.LONG))
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := CalculateTakeProfitWithPercent(tt.price, tt.percent, tt.isShort)
-			if result != tt.expected {
-				t.Errorf("got %v, want %v", result, tt.expected)
-			}
-		})
-	}
+func TestCalculateBuyQuantity(t *testing.T) {
+	assert.Equal(t, 10.0, CalculateBuyQuantity(10, 100))
+	assert.Equal(t, 0.0, CalculateBuyQuantity(10, 0))
+	assert.Equal(t, 0.0, CalculateBuyQuantity(0, 100))
+}
+
+func TestCalculateTakerFee(t *testing.T) {
+	assert.Equal(t, 0.04, CalculateTakerFee(100))
+	assert.Equal(t, 0.0, CalculateTakerFee(0))
+}
+
+func TestCalculateMakerFee(t *testing.T) {
+	assert.Equal(t, 0.02, CalculateMakerFee(100))
+	assert.Equal(t, 0.0, CalculateMakerFee(0))
+}
+
+func TestCalculatePNL(t *testing.T) {
+	assert.Equal(t, 10.0, CalculatePNL(101, 1000, 10, order.LONG))
+	assert.Equal(t, 100.0, CalculatePNL(90, 1000, 10, order.SHORT))
+	assert.Equal(t, 0.0, CalculatePNL(100, 1000, 10, order.SHORT))
+
+}
+
+func TestCalculateRoe(t *testing.T) {
+	assert.InDelta(t, 10.0, CalculateRoe(100, 101, 10, order.LONG), 1e-6)
+	assert.InDelta(t, 10, CalculateRoe(100, 99, 10, order.SHORT), 1e-6)
 }

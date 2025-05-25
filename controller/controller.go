@@ -3,12 +3,10 @@ package controller
 import (
 	"bytes"
 	"fmt"
-	"github.com/berserkkv/trader/service/connector"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log/slog"
-	"net/http"
 )
 
 var log *slog.Logger
@@ -25,11 +23,6 @@ func Register() {
 	r := gin.Default()
 
 	r.Use(cors.Default())
-
-	price := r.Group("/api/prices")
-	{
-		price.GET("", GetSolPrice)
-	}
 
 	bots := r.Group("/api/bots")
 	{
@@ -50,8 +43,4 @@ func Register() {
 	}
 
 	r.Run(":8080")
-}
-
-func GetSolPrice(c *gin.Context) {
-	c.JSON(http.StatusOK, connector.GetPrice("SOLUSDT"))
 }

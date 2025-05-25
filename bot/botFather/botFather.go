@@ -7,7 +7,6 @@ import (
 	"github.com/berserkkv/trader/model/enum/timeframe"
 	"github.com/berserkkv/trader/repository"
 
-	"github.com/berserkkv/trader/service/connector"
 	"github.com/berserkkv/trader/service/tools"
 	"log/slog"
 	"sync"
@@ -40,6 +39,7 @@ func (bf *BotFather) Start() {
 }
 
 func (bf *BotFather) runBots(minute int, hour int) {
+	time.Sleep(time.Duration(5) * time.Second)
 	for _, b := range bf.Bots() {
 
 		if b == nil || b.IsNotActive || b.InPos {
@@ -82,7 +82,7 @@ func (bf *BotFather) runBots(minute int, hour int) {
 }
 
 func (bf *BotFather) runStrategy(b *bot.Bot) {
-	candles := connector.GetKlines(b.Symbol, b.TimeFrame, 50)
+	candles := b.Connector.GetCandles(b.Symbol, b.TimeFrame, 50)
 
 	slog.Debug("Fetched klines from API", "length", len(candles))
 

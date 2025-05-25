@@ -7,6 +7,7 @@ import (
 	"github.com/berserkkv/trader/model/enum/symbol"
 	"github.com/berserkkv/trader/model/enum/timeframe"
 	"github.com/berserkkv/trader/repository"
+	"github.com/berserkkv/trader/service/connector"
 	"github.com/berserkkv/trader/strategy"
 	"log/slog"
 )
@@ -32,6 +33,7 @@ func GetAllBots() []bot.Bot {
 	bots := repository.GetAllBots()
 	for i := range bots {
 		bots[i].Strategy = strategy.GetStrategy(bots[i].StrategyName)
+		bots[i].Connector = connector.BinanceConnector{}
 	}
 	return bots
 }

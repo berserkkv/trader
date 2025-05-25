@@ -22,6 +22,7 @@ type Bot struct {
 	TimeFrame                timeframe.Timeframe `gorm:"not null" json:"timeFrame"`
 	StrategyName             string              `gorm:"not null" json:"strategyName"`
 	Strategy                 strategy.Strategy   `gorm:"-" json:"-"` // Skip interface for DB and JSON
+	Connector                connector.Connector `gorm:"-" json:"-"`
 	InitialCapital           float64             `gorm:"not null" json:"initialCapital"`
 	CurrentCapital           float64             `gorm:"not null" json:"currentCapital"`
 	LastScanned              time.Time           `gorm:"not null" json:"lastScanned"`
@@ -58,6 +59,7 @@ func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symb
 		TimeFrame:      timeframe,
 		StrategyName:   st.Name(),
 		Strategy:       st,
+		Connector:      connector.BinanceConnector{},
 		InitialCapital: capital,
 		CurrentCapital: capital,
 		Leverage:       leverage,
@@ -71,18 +73,11 @@ func (b *Bot) OpenPosition(command order.Command) error {
 	if err := b.CanOpenPosition(); err != nil {
 		return err
 	}
-	price := connector.GetPrice(b.Symbol)
+	price := b.Connector.GetPrice(b.Symbol)
 
-	stopLossPercent := 0.5
-	takeProfitPercent := 1.5
+	b.OrderStopLoss = calculator.CalculateStopLoss(price, b.StopLoss, b.OrderType)
+	b.OrderTakeProfit = calculator.CalculateTakeProfit(price, b.TakeProfit, b.OrderType)
 
-	if command == order.LONG {
-		b.OrderStopLoss = calculator.CalculateStopLossWithPercent(price, stopLossPercent, false)
-		b.OrderTakeProfit = calculator.CalculateTakeProfitWithPercent(price, takeProfitPercent, false)
-	} else {
-		b.OrderStopLoss = calculator.CalculateStopLossWithPercent(price, stopLossPercent, true)
-		b.OrderTakeProfit = calculator.CalculateTakeProfitWithPercent(price, takeProfitPercent, true)
-	}
 	fee := calculator.CalculateMakerFee(b.CurrentCapital)
 
 	b.CurrentCapital -= fee
@@ -120,15 +115,8 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 	b.OrderCapitalWithLeverage -= fee
 	b.OrderCapital -= fee
 
-	if b.OrderType == order.LONG {
-		pnl = calculator.CalculatePNLForLong(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity)
-		pnlPercent = calculator.CalculateRoeForLong(b.OrderEntryPrice, curPrice, b.Leverage)
-	} else if b.OrderType == order.SHORT {
-		pnl = calculator.CalculatePNLForShort(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity)
-		pnlPercent = calculator.CalculateRoeForShort(b.OrderEntryPrice, curPrice, b.Leverage)
-	} else {
-		return model.Order{}, fmt.Errorf("invalid order type")
-	}
+	pnl = calculator.CalculatePNL(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity, b.OrderType)
+	pnlPercent = calculator.CalculateRoe(b.OrderEntryPrice, curPrice, b.Leverage, b.OrderType)
 
 	b.calculateStatistics(pnl)
 
@@ -168,23 +156,31 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 	return closedOrder, nil
 }
 
-func (b *Bot) CanOpenPosition() error {
-	if b.IsNotActive {
-		slog.Debug("bot can't open position, bot not active", "name", b.Name)
-		return errors.New("bot can't open position, bot not active")
-	}
+func (b *Bot) ShiftStopLoss() {
+	realROE := b.Roe / b.Leverage
 
-	if b.InPos {
-		slog.Debug("bot is already in open position", "name", b.Name)
-		return errors.New("bot is already in open position")
-	}
+	if realROE >= 0.2 {
+		pnlDecimal := realROE / 100.0
+		shift := pnlDecimal / 2.0
 
-	if b.CurrentCapital <= 10 {
-		slog.Debug("bot can't open position, capital not enough", "name", b.Name)
-		return errors.New("bot can't open position, capital not enough")
+		var newStopLoss float64
+		if b.OrderType == order.LONG {
+			newStopLoss = b.OrderEntryPrice * (1.0 + shift)
+			if newStopLoss > b.OrderStopLoss {
+				b.OrderStopLoss = newStopLoss
+			}
+		} else if b.OrderType == order.SHORT {
+			newStopLoss = b.OrderEntryPrice * (1.0 - shift)
+			if newStopLoss < b.OrderStopLoss {
+				b.OrderStopLoss = newStopLoss
+			}
+		}
 	}
+}
 
-	return nil
+func (b *Bot) UpdatePnlAndRoe(curPrice float64) {
+	b.Roe = calculator.CalculateRoe(b.OrderEntryPrice, curPrice, b.Leverage, b.OrderType)
+	b.Pnl = calculator.CalculatePNL(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity, b.OrderType)
 }
 
 func (b *Bot) ShouldClosePosition(curPrice float64) bool {
@@ -222,50 +218,23 @@ func (b *Bot) calculateStatistics(pnl float64) {
 	b.TotalTrades++
 }
 
-func (b *Bot) calculateRoe(curPrice float64) float64 {
-	if b.OrderType == order.LONG {
-		return calculator.CalculateRoeForLong(b.OrderEntryPrice, curPrice, b.Leverage)
-	} else if b.OrderType == order.SHORT {
-		return calculator.CalculateRoeForShort(b.OrderEntryPrice, curPrice, b.Leverage)
+func (b *Bot) CanOpenPosition() error {
+	if b.IsNotActive {
+		slog.Debug("bot can't open position, bot not active", "name", b.Name)
+		return errors.New("bot can't open position, bot not active")
 	}
-	return 0
-}
 
-func (b *Bot) calculatePnl(curPrice float64) float64 {
-	if b.OrderType == order.LONG {
-		return calculator.CalculatePNLForLong(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity)
-	} else if b.OrderType == order.SHORT {
-		return calculator.CalculatePNLForShort(curPrice, b.OrderCapitalWithLeverage, b.OrderQuantity)
+	if b.InPos {
+		slog.Debug("bot is already in open position", "name", b.Name)
+		return errors.New("bot is already in open position")
 	}
-	return 0
-}
 
-func (b *Bot) UpdatePnlAndRoe(curPrice float64) {
-	b.Roe = b.calculateRoe(curPrice)
-	b.Pnl = b.calculatePnl(curPrice)
-}
-
-func (b *Bot) ShiftStopLoss() {
-	realROE := b.Roe / b.Leverage
-
-	if realROE >= 0.2 {
-		// Convert to decimal before calculations
-		pnlDecimal := realROE / 100.0
-
-		// Shift stop loss to half the profit
-		shift := pnlDecimal / 2.0
-
-		newStopLoss := b.OrderEntryPrice * (1.0 + shift)
-		if b.OrderType == order.LONG {
-			if newStopLoss > b.StopLoss {
-				b.OrderStopLoss = newStopLoss
-			}
-		} else if b.OrderType == order.SHORT {
-			if newStopLoss < b.StopLoss {
-				b.OrderStopLoss = newStopLoss
-			}
-		}
+	if b.CurrentCapital <= 10 {
+		slog.Debug("bot can't open position, capital not enough", "name", b.Name)
+		return errors.New("bot can't open position, capital not enough")
 	}
+
+	return nil
 }
 
 func (b *Bot) String() string {

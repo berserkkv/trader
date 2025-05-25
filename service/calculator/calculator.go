@@ -1,19 +1,19 @@
 package calculator
 
-const (
-	takerFeeRate float64 = 0.0004 // 0.04%
-	makerFeeRate float64 = 0.0002 // 0.02%
+import (
+	"github.com/berserkkv/trader/constant"
+	"github.com/berserkkv/trader/model/enum/order"
 )
 
-func CalculateStopLossWithPercent(price float64, percent float64, isShort bool) float64 {
-	if isShort {
+func CalculateStopLoss(price float64, percent float64, orderType order.Command) float64 {
+	if orderType == order.SHORT {
 		return price + (price * percent / 100)
 	}
 	return price - (price * percent / 100)
 }
 
-func CalculateTakeProfitWithPercent(price float64, percent float64, isShort bool) float64 {
-	if isShort {
+func CalculateTakeProfit(price float64, percent float64, orderType order.Command) float64 {
+	if orderType == order.SHORT {
 		return price - (price * percent / 100)
 	}
 	return price + (price * percent / 100)
@@ -27,25 +27,26 @@ func CalculateBuyQuantity(price float64, capital float64) float64 {
 }
 
 func CalculateTakerFee(price float64) float64 {
-	return takerFeeRate * price
+	return constant.TakerFeeRate * price
 }
 
 func CalculateMakerFee(price float64) float64 {
-	return price * makerFeeRate
+	return price * constant.MakerFeeRate
 }
 
-func CalculatePNLForLong(price float64, capital float64, quantity float64) float64 {
-	return (price * quantity) - capital
+func CalculatePNL(price float64, capital float64, quantity float64, orderType order.Command) float64 {
+	if orderType == order.LONG {
+		return (price * quantity) - capital
+	} else if orderType == order.SHORT {
+		return capital - (price * quantity)
+	}
+	return 0
 }
-
-func CalculatePNLForShort(price float64, capital float64, quantity float64) float64 {
-	return capital - (price * quantity)
-}
-
-func CalculateRoeForLong(entryPrice, exitPrice, leverage float64) float64 {
-	return ((exitPrice - entryPrice) / entryPrice) * 100 * leverage
-}
-
-func CalculateRoeForShort(entryPrice, exitPrice, leverage float64) float64 {
-	return ((entryPrice - exitPrice) / entryPrice) * 100 * leverage
+func CalculateRoe(entryPrice, exitPrice, leverage float64, orderType order.Command) float64 {
+	if orderType == order.LONG {
+		return ((exitPrice - entryPrice) / entryPrice) * 100 * leverage
+	} else if orderType == order.SHORT {
+		return ((entryPrice - exitPrice) / entryPrice) * 100 * leverage
+	}
+	return 0
 }

@@ -3,7 +3,6 @@ package botFather
 import (
 	"github.com/berserkkv/trader/model"
 	"github.com/berserkkv/trader/repository"
-	"github.com/berserkkv/trader/service/connector"
 	"log/slog"
 	"time"
 )
@@ -45,7 +44,7 @@ func (bf *BotFather) monitorPosition() {
 				continue
 			}
 
-			curPrice := connector.GetPrice(b.Symbol)
+			curPrice := b.Connector.GetPrice(b.Symbol)
 
 			if b.ShouldClosePosition(curPrice) {
 				closedOrder, err := b.ClosePosition(curPrice)
@@ -61,12 +60,13 @@ func (bf *BotFather) monitorPosition() {
 			} else {
 				b.UpdatePnlAndRoe(curPrice)
 				b.ShiftStopLoss()
+				b.OrderScannedTime = time.Now()
+				_, err := repository.UpdateBot(b)
+				if err != nil {
+					slog.Error("Error updating bot", "error", err.Error(), "botName", b.Name)
+				}
 			}
-			b.OrderScannedTime = time.Now()
-			_, err := repository.UpdateBot(b)
-			if err != nil {
-				slog.Error("Error updating bot", "error", err.Error(), "botName", b.Name)
-			}
+
 		}
 
 		for i := range closedOrders {
