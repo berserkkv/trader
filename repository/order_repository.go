@@ -14,7 +14,10 @@ func GetAllOrders() []model.Order {
 
 func GetAllOrdersByBotID(botId int64) []model.Order {
 	var orders []model.Order
-	database.DB.Where("bot_id = ?", botId).Find(&orders)
+	database.DB.
+		Where("bot_id = ?", botId).
+		Order("created_time DESC").
+		Find(&orders)
 	return orders
 }
 

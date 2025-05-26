@@ -74,6 +74,7 @@ func (b *Bot) OpenPosition(command order.Command) error {
 		return err
 	}
 	price := b.Connector.GetPrice(b.Symbol)
+	b.OrderType = command
 
 	b.OrderStopLoss = calculator.CalculateStopLoss(price, b.StopLoss, b.OrderType)
 	b.OrderTakeProfit = calculator.CalculateTakeProfit(price, b.TakeProfit, b.OrderType)
@@ -90,7 +91,6 @@ func (b *Bot) OpenPosition(command order.Command) error {
 	b.OrderCapital = b.CurrentCapital
 	// b.CurrentCapital = 0
 	b.InPos = true
-	b.OrderType = command
 	b.OrderCreatedTime = now
 	b.OrderScannedTime = now
 	b.OrderFee = fee
@@ -159,7 +159,7 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 func (b *Bot) ShiftStopLoss() {
 	realROE := b.Roe / b.Leverage
 
-	if realROE >= 0.2 {
+	if realROE >= 0.15 {
 		pnlDecimal := realROE / 100.0
 		shift := pnlDecimal / 2.0
 

@@ -33,7 +33,7 @@ func runBothFather() {
 	capital := 100.0
 	leverage := 10.0
 	takeProfit := 1.0
-	stopLoss := 1.0
+	stopLoss := 0.75
 
 	sts := []strategy.Strategy{
 		strategy.HAStrategy{},
@@ -53,7 +53,7 @@ func runBothFather() {
 	smbs := []symbol.Symbol{
 		symbol.SOLUSDT,
 		symbol.ETHUSDT,
-		symbol.BTCUSDT,
+		//symbol.BTCUSDT,
 		symbol.BNBUSDT,
 	}
 
