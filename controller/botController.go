@@ -10,7 +10,35 @@ import (
 )
 
 func GetAllBots(c *gin.Context) {
-	bots := service.GetAllBots()
+	fields := map[string]interface{}{}
+
+	if val := c.Query("isNotActive"); val != "" {
+		isNotActive, err := strconv.ParseBool(val)
+		if err == nil {
+			fields["is_not_active"] = isNotActive
+		}
+	}
+
+	if strategy := c.Query("strategy"); strategy != "" {
+		fields["strategy_name"] = strategy
+	}
+
+	if timeframe := c.Query("timeframe"); timeframe != "" {
+		fields["timeframe"] = timeframe
+	}
+
+	if symbol := c.Query("symbol"); symbol != "" {
+		fields["symbol"] = symbol
+	}
+
+	if val := c.Query("inPos"); val != "" {
+		inPos, err := strconv.ParseBool(val)
+		if err == nil {
+			fields["in_pos"] = inPos
+		}
+	}
+
+	bots := service.GetAllBots(fields)
 	c.JSON(http.StatusOK, bots)
 }
 
@@ -64,6 +92,11 @@ func CreateBot(c *gin.Context) {
 		return
 	}
 	c.JSON(200, bot)
+}
+
+func GetBotStatistics(c *gin.Context) {
+	stats := service.GetBotStatistics()
+	c.JSON(200, stats)
 }
 
 func extractId(c *gin.Context) (int64, bool) {

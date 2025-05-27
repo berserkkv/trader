@@ -47,7 +47,7 @@ func (bf *BotFather) runBots(minute int, hour int) {
 			continue
 		}
 
-		switch b.TimeFrame {
+		switch b.Timeframe {
 		case timeframe.MINUTE_1:
 			bf.runStrategy(b)
 
@@ -82,7 +82,7 @@ func (bf *BotFather) runBots(minute int, hour int) {
 }
 
 func (bf *BotFather) runStrategy(b *bot.Bot) {
-	candles := b.Connector.GetCandles(b.Symbol, b.TimeFrame, 50)
+	candles := b.Connector.GetCandles(b.Symbol, b.Timeframe, 50)
 
 	slog.Debug("Fetched klines from API", "length", len(candles))
 

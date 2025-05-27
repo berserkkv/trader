@@ -19,7 +19,7 @@ type Bot struct {
 	Name                     string              `gorm:"not null;unique" json:"name"`
 	Symbol                   symbol.Symbol       `gorm:"not null;check:name <> ''" json:"symbol"`
 	IsNotActive              bool                `gorm:"default:false" json:"isNotActive"`
-	TimeFrame                timeframe.Timeframe `gorm:"not null" json:"timeFrame"`
+	Timeframe                timeframe.Timeframe `gorm:"not null" json:"timeframe"`
 	StrategyName             string              `gorm:"not null" json:"strategyName"`
 	Strategy                 strategy.Strategy   `gorm:"-" json:"-"` // Skip interface for DB and JSON
 	Connector                connector.Connector `gorm:"-" json:"-"`
@@ -56,7 +56,7 @@ func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symb
 	return &Bot{
 		Name:           name,
 		Symbol:         smb,
-		TimeFrame:      timeframe,
+		Timeframe:      timeframe,
 		StrategyName:   st.Name(),
 		Strategy:       st,
 		Connector:      connector.BinanceConnector{},
@@ -79,17 +79,19 @@ func (b *Bot) OpenPosition(command order.Command) error {
 	b.OrderStopLoss = calculator.CalculateStopLoss(price, b.StopLoss, b.OrderType)
 	b.OrderTakeProfit = calculator.CalculateTakeProfit(price, b.TakeProfit, b.OrderType)
 
-	fee := calculator.CalculateMakerFee(b.CurrentCapital)
+	capital := (b.CurrentCapital * 25) / 100
+	b.CurrentCapital -= capital
 
-	b.CurrentCapital -= fee
+	fee := calculator.CalculateMakerFee(capital)
 
-	b.OrderCapitalWithLeverage = b.Leverage * b.CurrentCapital
+	capital -= fee
+
+	b.OrderCapitalWithLeverage = b.Leverage * capital
 
 	now := time.Now()
 	b.OrderQuantity = calculator.CalculateBuyQuantity(price, b.OrderCapitalWithLeverage)
 	b.OrderEntryPrice = price
-	b.OrderCapital = b.CurrentCapital
-	// b.CurrentCapital = 0
+	b.OrderCapital = capital
 	b.InPos = true
 	b.OrderCreatedTime = now
 	b.OrderScannedTime = now
@@ -122,7 +124,7 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 
 	b.OrderFee += fee
 
-	b.CurrentCapital = b.OrderCapital + pnl
+	b.CurrentCapital += b.OrderCapital + pnl
 
 	closedOrder := model.Order{
 		Symbol:            b.Symbol,
@@ -159,7 +161,7 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 func (b *Bot) ShiftStopLoss() {
 	realROE := b.Roe / b.Leverage
 
-	if realROE >= 0.15 {
+	if realROE >= 0.14 {
 		pnlDecimal := realROE / 100.0
 		shift := pnlDecimal / 2.0
 
@@ -198,6 +200,39 @@ func (b *Bot) ShouldClosePosition(curPrice float64) bool {
 		}
 	}
 	return false
+}
+
+func (b *Bot) GridOrderMonitor(curPrice float64) {
+	if b.CurrentCapital == 0 {
+		return
+	}
+	if b.Roe <= -5 {
+		capital := b.CurrentCapital
+		b.CurrentCapital -= capital
+
+		fee := calculator.CalculateMakerFee(capital)
+		capital -= fee
+		capitalWithLeverage := capital * b.Leverage
+		quantity := calculator.CalculateBuyQuantity(curPrice, capitalWithLeverage)
+		b.OrderCapital += capital
+		b.OrderQuantity += quantity
+		b.OrderFee += fee
+		b.OrderCapitalWithLeverage += capitalWithLeverage
+		b.OrderEntryPrice = b.OrderCapitalWithLeverage / b.OrderQuantity
+	} else if b.Roe <= -2.5 {
+		capital := (b.CurrentCapital * 33) / 100
+		b.CurrentCapital -= capital
+
+		fee := calculator.CalculateMakerFee(capital)
+		capital -= fee
+		capitalWithLeverage := capital * b.Leverage
+		quantity := calculator.CalculateBuyQuantity(curPrice, capitalWithLeverage)
+		b.OrderCapital += capital
+		b.OrderQuantity += quantity
+		b.OrderFee += fee
+		b.OrderCapitalWithLeverage += capitalWithLeverage
+		b.OrderEntryPrice = b.OrderCapitalWithLeverage / b.OrderQuantity
+	}
 }
 
 func (b *Bot) calculateStatistics(pnl float64) {

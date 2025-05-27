@@ -71,7 +71,7 @@ func runBothFather() {
 		}
 	}
 
-	bots := service.GetAllBots()
+	bots := service.GetAllBots(map[string]interface{}{})
 
 	for i := range bots {
 		bf.AddBot(&bots[i])

@@ -7,9 +7,9 @@ import (
 	"log/slog"
 )
 
-func GetAllBots() []bot.Bot {
+func GetAllBots(fields map[string]interface{}) []bot.Bot {
 	var bots []bot.Bot
-	database.DB.Find(&bots)
+	database.DB.Where(fields).Find(&bots)
 	return bots
 }
 
