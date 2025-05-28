@@ -79,7 +79,8 @@ func (b *Bot) OpenPosition(command order.Command) error {
 	b.OrderStopLoss = calculator.CalculateStopLoss(price, b.StopLoss, b.OrderType)
 	b.OrderTakeProfit = calculator.CalculateTakeProfit(price, b.TakeProfit, b.OrderType)
 
-	capital := (b.CurrentCapital * 25) / 100
+	//capital := (b.CurrentCapital * 25) / 100
+	capital := b.CurrentCapital
 	b.CurrentCapital -= capital
 
 	fee := calculator.CalculateMakerFee(capital)

@@ -12,6 +12,7 @@ import (
 	"github.com/berserkkv/trader/tools/config"
 	logger "github.com/berserkkv/trader/tools/log"
 	"log/slog"
+	"time"
 )
 
 func main() {
@@ -20,16 +21,17 @@ func main() {
 
 	database.ConnectDB()
 
-	go runBothFather()
+	bf := botFather.GetBotFather()
+
+	go runBothFather(bf)
+
 	controller.Register()
 
 	slog.Info("Server started on port: 8080")
 
 }
 
-func runBothFather() {
-	bf := botFather.GetBotFather()
-
+func runBothFather(bf *botFather.BotFather) {
 	capital := 100.0
 	leverage := 10.0
 	takeProfit := 1.0
@@ -43,18 +45,17 @@ func runBothFather() {
 		strategy.BBHA2Strategy{},
 		strategy.HASmoothedEMAStrategy{},
 		strategy.BBHA3{},
+		strategy.Random{},
 	}
+
 	tfs := []timeframe.Timeframe{
 		timeframe.MINUTE_1,
-		timeframe.MINUTE_5,
 		timeframe.MINUTE_15,
 	}
 
 	smbs := []symbol.Symbol{
 		symbol.SOLUSDT,
 		symbol.ETHUSDT,
-		//symbol.BTCUSDT,
-		symbol.BNBUSDT,
 	}
 
 	for _, tf := range tfs {
@@ -73,6 +74,8 @@ func runBothFather() {
 
 	bots := service.GetAllBots(map[string]interface{}{})
 
+	go StartStatisticsScheduler()
+
 	for i := range bots {
 		bf.AddBot(&bots[i])
 		if bots[i].InPos {
@@ -82,4 +85,16 @@ func runBothFather() {
 
 	go bf.CheckAndStartMonitoring()
 	bf.Start()
+}
+
+func StartStatisticsScheduler() {
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+
+		for {
+			service.SaveStatistics()
+			<-ticker.C // wait for next tick
+		}
+	}()
 }

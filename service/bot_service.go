@@ -10,7 +10,6 @@ import (
 	"github.com/berserkkv/trader/service/connector"
 	"github.com/berserkkv/trader/strategy"
 	"log/slog"
-	"sort"
 )
 
 func SaveBot(bot *bot.Bot) (*bot.Bot, error) {
@@ -110,52 +109,4 @@ func CreateBot(tradingSymbol, strategyName, tradingTimeFrame string, capital, le
 	botFather.GetBotFather().AddBot(savedBot)
 
 	return savedBot, err
-}
-
-type Stats struct {
-	StrategyName string
-	Total        float64
-	M1           float64
-	M5           float64
-	M15          float64
-	BotCount     int
-}
-
-func GetBotStatistics() []Stats {
-	bots := repository.GetAllBots(nil)
-	statistics := map[string]*Stats{}
-
-	for _, b := range bots {
-		s, exists := statistics[b.StrategyName]
-		if !exists {
-			s = &Stats{StrategyName: b.StrategyName}
-			statistics[b.StrategyName] = s
-		}
-
-		balance := b.CurrentCapital + b.OrderCapital
-		s.Total += balance
-		s.BotCount++
-
-		switch b.Timeframe {
-		case timeframe.MINUTE_1:
-			s.M1 += balance
-		case timeframe.MINUTE_5:
-			s.M5 += balance
-		case timeframe.MINUTE_15:
-			s.M15 += balance
-		}
-	}
-
-	// Convert map to slice
-	result := make([]Stats, 0, len(statistics))
-	for _, stat := range statistics {
-		result = append(result, *stat)
-	}
-
-	// Sort by Total descending (example)
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Total > result[j].Total
-	})
-
-	return result
 }

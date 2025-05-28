@@ -17,8 +17,10 @@ func ConnectDB() {
 	}
 	db.Migrator().DropTable(&model.Order{})
 	db.Migrator().DropTable(&bot.Bot{})
+	db.Migrator().DropTable(&model.Statistics{})
 
 	db.AutoMigrate(&model.Order{})
 	db.AutoMigrate(&bot.Bot{})
+	db.AutoMigrate(&model.Statistics{})
 	DB = db
 }

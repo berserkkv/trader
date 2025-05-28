@@ -27,6 +27,8 @@ func GetStrategy(name string) Strategy {
 		return &BBHA2Strategy{}
 	case "BBHA3":
 		return &BBHA3{}
+	case "RANDOM":
+		return &Random{}
 	default:
 		slog.Error("Strategy not found", "name", name)
 		return nil

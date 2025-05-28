@@ -94,11 +94,6 @@ func CreateBot(c *gin.Context) {
 	c.JSON(200, bot)
 }
 
-func GetBotStatistics(c *gin.Context) {
-	stats := service.GetBotStatistics()
-	c.JSON(200, stats)
-}
-
 func extractId(c *gin.Context) (int64, bool) {
 	id := c.Param("id")
 	botID, err := strconv.Atoi(id)

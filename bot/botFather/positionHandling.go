@@ -59,7 +59,7 @@ func (bf *BotFather) monitorPosition() {
 				slog.Debug("Position closed, bot ready for new orders", "botName", b.Name)
 			} else {
 				b.UpdatePnlAndRoe(curPrice)
-				b.GridOrderMonitor(curPrice)
+				//b.GridOrderMonitor(curPrice)
 				b.ShiftStopLoss()
 				b.OrderScannedTime = time.Now()
 				_, err := repository.UpdateBot(b)
