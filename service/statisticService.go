@@ -32,13 +32,13 @@ func GetAllStatistics() (Result, error) {
 		slog.Error("GetAllStatistics err:", err)
 	}
 	for _, st := range sts {
-		if st.Symbol == symbol.SOLUSDT {
+		if st.Symbol == symbol.SOLUSDT && st.StrategyName == "BBHA3" {
 			if st.Timeframe == timeframe.MINUTE_15 {
 				sol15 = append(sol15, st)
 			} else if st.Timeframe == timeframe.MINUTE_1 {
 				sol1 = append(sol1, st)
 			}
-		} else if st.Symbol == symbol.ETHUSDT {
+		} else if st.Symbol == symbol.ETHUSDT && st.StrategyName == "BBHA3" {
 			if st.Timeframe == timeframe.MINUTE_15 {
 				eth15 = append(eth15, st)
 			} else if st.Timeframe == timeframe.MINUTE_1 {

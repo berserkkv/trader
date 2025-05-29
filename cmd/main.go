@@ -35,7 +35,7 @@ func runBothFather(bf *botFather.BotFather) {
 	capital := 100.0
 	leverage := 10.0
 	takeProfit := 1.0
-	stopLoss := 0.75
+	stopLoss := 0.5
 
 	sts := []strategy.Strategy{
 		strategy.HAStrategy{},
