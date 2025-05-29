@@ -47,6 +47,11 @@ func (bf *BotFather) runBots(minute int, hour int) {
 			continue
 		}
 
+		if b.CurrentCapital <= 85 {
+			b.IsNotActive = true
+			continue
+		}
+
 		switch b.Timeframe {
 		case timeframe.MINUTE_1:
 			bf.runStrategy(b)

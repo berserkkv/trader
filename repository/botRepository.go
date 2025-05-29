@@ -9,7 +9,10 @@ import (
 
 func GetAllBots(fields map[string]interface{}) []bot.Bot {
 	var bots []bot.Bot
-	database.DB.Where(fields).Find(&bots)
+	database.DB.
+		Where(fields).
+		Order("is_not_active").
+		Find(&bots)
 	return bots
 }
 

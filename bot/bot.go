@@ -269,7 +269,7 @@ func (b *Bot) CanOpenPosition() error {
 		return errors.New("bot is already in open position")
 	}
 
-	if b.CurrentCapital <= 10 {
+	if b.CurrentCapital <= 85 {
 		slog.Debug("bot can't open position, capital not enough", "name", b.Name)
 		return errors.New("bot can't open position, capital not enough")
 	}

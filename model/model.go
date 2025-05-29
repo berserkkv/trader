@@ -3,7 +3,6 @@ package model
 import (
 	"github.com/berserkkv/trader/model/enum/order"
 	"github.com/berserkkv/trader/model/enum/symbol"
-	"github.com/berserkkv/trader/model/enum/timeframe"
 	"time"
 )
 
@@ -48,10 +47,6 @@ type CreateBotRequest struct {
 }
 
 type Statistics struct {
-	ID           uint                `gorm:"primaryKey"`
-	StrategyName string              `gorm:"not null" json:"strategy"`
-	Symbol       symbol.Symbol       `gorm:"not null" json:"symbol"`
-	Timeframe    timeframe.Timeframe `gorm:"not null" json:"timeframe"`
-	Balance      float64             `gorm:"not null" json:"balance"`
-	Time         time.Time           `gorm:"not null" json:"time"`
+	Pnl  float64   `json:"pnl"`
+	Time time.Time `json:"time"`
 }

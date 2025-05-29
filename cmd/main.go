@@ -12,7 +12,6 @@ import (
 	"github.com/berserkkv/trader/tools/config"
 	logger "github.com/berserkkv/trader/tools/log"
 	"log/slog"
-	"time"
 )
 
 func main() {
@@ -34,18 +33,18 @@ func main() {
 func runBothFather(bf *botFather.BotFather) {
 	capital := 100.0
 	leverage := 10.0
-	takeProfit := 1.0
-	stopLoss := 0.5
+	takeProfit := 3.0
+	stopLoss := 1.0
 
 	sts := []strategy.Strategy{
 		strategy.HAStrategy{},
-		strategy.HASmoothedStrategy{},
-		strategy.HAEMAStrategy{},
-		strategy.BBHAStrategy{},
-		strategy.BBHA2Strategy{},
-		strategy.HASmoothedEMAStrategy{},
+		//strategy.HASmoothedStrategy{},
+		//strategy.HAEMAStrategy{},
+		//strategy.BBHAStrategy{},
+		//strategy.BBHA2Strategy{},
 		strategy.BBHA3{},
-		strategy.Random{},
+		strategy.HASmoothedEMAStrategy{},
+		//strategy.Random{},
 	}
 
 	tfs := []timeframe.Timeframe{
@@ -74,7 +73,7 @@ func runBothFather(bf *botFather.BotFather) {
 
 	bots := service.GetAllBots(map[string]interface{}{})
 
-	go StartStatisticsScheduler()
+	//go StartStatisticsScheduler()
 
 	for i := range bots {
 		bf.AddBot(&bots[i])
@@ -85,16 +84,4 @@ func runBothFather(bf *botFather.BotFather) {
 
 	go bf.CheckAndStartMonitoring()
 	bf.Start()
-}
-
-func StartStatisticsScheduler() {
-	go func() {
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-
-		for {
-			service.SaveStatistics()
-			<-ticker.C // wait for next tick
-		}
-	}()
 }

@@ -12,11 +12,19 @@ func GetAllOrders() []model.Order {
 	return orders
 }
 
-func GetAllOrdersByBotID(botId int64) []model.Order {
+func GetAllOrdersByBotIDDesc(botId int64) []model.Order {
 	var orders []model.Order
 	database.DB.
 		Where("bot_id = ?", botId).
 		Order("created_time DESC").
+		Find(&orders)
+	return orders
+}
+
+func GetAllOrdersByBotID(botId int64) []model.Order {
+	var orders []model.Order
+	database.DB.
+		Where("bot_id = ?", botId).
 		Find(&orders)
 	return orders
 }

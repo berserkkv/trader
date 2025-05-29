@@ -33,20 +33,13 @@ func Register() {
 		bots.PATCH("/:id/start", StartBot)
 	}
 
-	statistics := r.Group("/api/statistics")
-	{
-		statistics.GET("", GetAllStatistics)
-		statistics.GET("/symbol/:symbol", GetStatisticsBySymbol)
-		statistics.GET("/timeframe/:timeframe", GetStatisticsByTimeframe)
-		statistics.GET("/strategy/:strategy", GetStatisticsByStrategy)
-	}
-
 	orders := r.Group("/api/orders")
 	{
 		orders.GET("", GetOrders)
 		orders.POST("", CreateOrder)
 		orders.PUT("", UpdateOrder)
 		orders.GET("/by-bot", GetOrdersByBotId)
+		orders.GET("/statistics", GetOrderStatistics)
 
 	}
 
