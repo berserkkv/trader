@@ -25,7 +25,7 @@ func GetOrderStatistics(botId int64) []model.Statistics {
 	})
 	for i := 1; i < len(o); i++ {
 		statistic := model.Statistics{
-			Pnl:  o[i].ProfitLossPercent + o[i-1].ProfitLossPercent,
+			Pnl:  o[i].ProfitLossPercent + s[i-1].Pnl,
 			Time: o[i].ClosedTime,
 		}
 		s = append(s, statistic)
