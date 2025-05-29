@@ -15,12 +15,18 @@ func GetAllOrders() []model.Order {
 
 func GetOrderStatistics(botId int64) []model.Statistics {
 	o := repository.GetAllOrdersByBotID(botId)
-
+	if len(o) == 0 {
+		return []model.Statistics{}
+	}
 	s := make([]model.Statistics, 0)
-	for _, order := range o {
+	s = append(s, model.Statistics{
+		Pnl:  o[0].ProfitLossPercent,
+		Time: o[0].ClosedTime,
+	})
+	for i := 1; i < len(o); i++ {
 		statistic := model.Statistics{
-			Pnl:  order.ProfitLossPercent,
-			Time: order.ClosedTime,
+			Pnl:  o[i].ProfitLossPercent + o[i-1].ProfitLossPercent,
+			Time: o[i].ClosedTime,
 		}
 		s = append(s, statistic)
 	}
