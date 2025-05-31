@@ -64,6 +64,16 @@ func StopBot(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "Stoped bot", "id": botId})
 }
 
+func ClosePosition(c *gin.Context) {
+	botId, ok := extractId(c)
+	if !ok {
+		return
+	}
+
+	service.ClosePosition(int64(botId))
+
+}
+
 func StartBot(c *gin.Context) {
 	botId, ok := extractId(c)
 	if !ok {

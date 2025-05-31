@@ -83,6 +83,12 @@ func StartBot(botId int64) error {
 	return nil
 }
 
+func ClosePosition(botId int64) {
+	botFather.GetBotFather().ClosePosition(botId)
+
+	slog.Error("Closed Position", "id", botId)
+}
+
 func CreateBot(tradingSymbol, strategyName, tradingTimeFrame string, capital, leverage, takeProfit, stopLoss float64) (*bot.Bot, error) {
 
 	tradingStrategy := strategy.GetStrategy(strategyName)

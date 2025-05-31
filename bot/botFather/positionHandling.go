@@ -80,3 +80,21 @@ func (bf *BotFather) monitorPosition() {
 		closedOrders = closedOrders[:0]
 	}
 }
+
+func (bf *BotFather) ClosePosition(botId int64) {
+	b := bf.bots[botId]
+	curPrice := b.Connector.GetPrice(b.Symbol)
+	closedOrder, err := b.ClosePosition(curPrice)
+	if err != nil {
+		slog.Error("Error closing position", "error", err.Error(), "botName", b.Name)
+	}
+
+	bf.DecreaseTotalBotsInOrder()
+
+	_, err = repository.UpdateBot(b)
+	if err != nil {
+		slog.Error("Can't update database after closing order", "error", err.Error(), "botName", b.Name)
+	}
+	repository.CreateOrder(closedOrder)
+
+}

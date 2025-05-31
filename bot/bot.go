@@ -59,6 +59,7 @@ func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symb
 		Timeframe:      timeframe,
 		StrategyName:   st.Name(),
 		Strategy:       st,
+		IsNotActive:    true,
 		Connector:      connector.BinanceConnector{},
 		InitialCapital: capital,
 		CurrentCapital: capital,
@@ -67,6 +68,25 @@ func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symb
 		StopLoss:       stopLoss,
 	}
 
+}
+
+func NewBot2(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symbol, leverage, takeProfit, stopLoss float64) *Bot {
+	name := st.Name() + "_" + fmt.Sprintf("%.1f", stopLoss)
+
+	return &Bot{
+		Name:           name,
+		Symbol:         smb,
+		Timeframe:      timeframe,
+		StrategyName:   st.Name(),
+		IsNotActive:    true,
+		Strategy:       st,
+		Connector:      connector.BinanceConnector{},
+		InitialCapital: 100,
+		CurrentCapital: 100,
+		Leverage:       leverage,
+		TakeProfit:     takeProfit,
+		StopLoss:       stopLoss,
+	}
 }
 
 func (b *Bot) OpenPosition(command order.Command) error {

@@ -6,7 +6,7 @@ import (
 )
 
 func GetAllOrders() []model.Order {
-	orders := repository.GetAllOrders()
+	orders := repository.GetAllOrders("Desc")
 	if len(orders) > 20 {
 		return orders[:20]
 	}
@@ -31,6 +31,40 @@ func GetOrderStatistics(botId int64) []model.Statistics {
 		s = append(s, statistic)
 	}
 	return s
+}
+
+func GetAllOrderStatistics() map[string][]model.Statistics {
+	orders := repository.GetAllOrders("asc")
+	if len(orders) == 0 {
+		return map[string][]model.Statistics{}
+	}
+
+	statsMap := make(map[int64][]model.Statistics)
+
+	for _, o := range orders {
+		lastPnl := 0.0
+		if _, exists := statsMap[o.BotID]; exists {
+			lastPnl = statsMap[o.BotID][len(statsMap[o.BotID])-1].Pnl
+		}
+		statsMap[o.BotID] = append(statsMap[o.BotID], model.Statistics{
+			Pnl:  o.ProfitLoss + lastPnl,
+			Time: o.ClosedTime,
+		})
+	}
+	res := make(map[string][]model.Statistics)
+
+	bots := repository.GetAllBots(nil)
+
+	for _, b := range bots {
+		if b.IsNotActive {
+			continue
+		}
+		if _, exists := statsMap[b.Id]; exists {
+			res[b.Name] = statsMap[b.Id]
+		}
+	}
+
+	return res
 }
 
 func CreateOrder(order model.Order) model.Order {

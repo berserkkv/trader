@@ -5,9 +5,12 @@ import (
 	"github.com/berserkkv/trader/model"
 )
 
-func GetAllOrders() []model.Order {
+func GetAllOrders(sortOrder string) []model.Order {
 	var orders []model.Order
-	database.DB.Order("closed_time DESC").Find(&orders)
+	if sortOrder != "desc" {
+		sortOrder = "asc"
+	}
+	database.DB.Order("closed_time " + sortOrder).Find(&orders)
 
 	return orders
 }

@@ -18,7 +18,8 @@ func GetOrders(c *gin.Context) {
 func GetOrderStatistics(c *gin.Context) {
 	botIdParam := c.Query("botId")
 	if botIdParam == "" {
-		c.JSON(400, gin.H{"error": "botId query parameter is required"})
+		statsMap := service.GetAllOrderStatistics()
+		c.JSON(http.StatusOK, statsMap)
 		return
 	}
 
@@ -43,6 +44,7 @@ func GetOrderStatistics(c *gin.Context) {
 	//})
 	c.JSON(200, s)
 }
+
 func CreateOrder(c *gin.Context) {
 	var order model.Order
 
