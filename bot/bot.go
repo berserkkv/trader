@@ -22,6 +22,7 @@ type Bot struct {
 	Timeframe                timeframe.Timeframe `gorm:"not null" json:"timeframe"`
 	StrategyName             string              `gorm:"not null" json:"strategyName"`
 	Strategy                 strategy.Strategy   `gorm:"-" json:"-"` // Skip interface for DB and JSON
+	StrategyInfo             string              `json:"strategyInfo"`
 	Connector                connector.Connector `gorm:"-" json:"-"`
 	InitialCapital           float64             `gorm:"not null" json:"initialCapital"`
 	CurrentCapital           float64             `gorm:"not null" json:"currentCapital"`
@@ -54,12 +55,12 @@ type Bot struct {
 func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symbol, capital, leverage, takeProfit, stopLoss float64) *Bot {
 	name := st.Name() + "_" + string(timeframe) + "_" + string(smb)
 	return &Bot{
-		Name:           name,
-		Symbol:         smb,
-		Timeframe:      timeframe,
-		StrategyName:   st.Name(),
-		Strategy:       st,
-		IsNotActive:    true,
+		Name:         name,
+		Symbol:       smb,
+		Timeframe:    timeframe,
+		StrategyName: st.Name(),
+		Strategy:     st,
+		//IsNotActive:    true,
 		Connector:      connector.BinanceConnector{},
 		InitialCapital: capital,
 		CurrentCapital: capital,

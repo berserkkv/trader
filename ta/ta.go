@@ -74,3 +74,75 @@ func DetectHeikinAshiColorChange(has []model.HeikinAshi) (changed bool, lastColo
 	curr := has[len(has)-1].Color
 	return prev != curr, curr
 }
+
+func ATR(candles []model.Candle, period int) []float64 {
+	tr := make([]float64, len(candles))
+	for i := 1; i < len(candles); i++ {
+		h_l := candles[i].High - candles[i].Low
+		h_pc := math.Abs(candles[i].High - candles[i-1].Close)
+		l_pc := math.Abs(candles[i].Low - candles[i-1].Close)
+		tr[i] = math.Max(h_l, math.Max(h_pc, l_pc))
+	}
+
+	atr := make([]float64, len(candles))
+	var sum float64
+	for i := 1; i <= period && i < len(candles); i++ {
+		sum += tr[i]
+	}
+	atr[period] = sum / float64(period)
+
+	for i := period + 1; i < len(candles); i++ {
+		atr[i] = (atr[i-1]*(float64(period-1)) + tr[i]) / float64(period)
+	}
+	return atr
+}
+
+// Supertrend calculation for slice of Candles
+func Supertrend(candles []model.Candle, atrPeriod int, factor float64) ([]float64, []int) {
+	atr := ATR(candles, atrPeriod)
+
+	supertrend := make([]float64, len(candles))
+	direction := make([]int, len(candles)) // 1 = uptrend, -1 = downtrend
+
+	var finalUpperBand, finalLowerBand float64
+
+	for i := atrPeriod; i < len(candles); i++ {
+		hl2 := (candles[i].High + candles[i].Low) / 2
+		upperBand := hl2 + factor*atr[i]
+		lowerBand := hl2 - factor*atr[i]
+
+		if i == atrPeriod {
+			finalUpperBand = upperBand
+			finalLowerBand = lowerBand
+			direction[i] = 1 // start with uptrend
+			supertrend[i] = finalLowerBand
+			continue
+		}
+
+		// Adjust bands according to previous values and price
+		if upperBand < finalUpperBand || candles[i-1].Close > finalUpperBand {
+			finalUpperBand = upperBand
+		}
+		if lowerBand > finalLowerBand || candles[i-1].Close < finalLowerBand {
+			finalLowerBand = lowerBand
+		}
+
+		// Determine trend direction
+		if candles[i].Close > finalUpperBand {
+			direction[i] = 1
+		} else if candles[i].Close < finalLowerBand {
+			direction[i] = -1
+		} else {
+			direction[i] = direction[i-1]
+		}
+
+		// Set Supertrend line
+		if direction[i] == 1 {
+			supertrend[i] = finalLowerBand
+		} else {
+			supertrend[i] = finalUpperBand
+		}
+	}
+
+	return supertrend, direction
+}

@@ -91,7 +91,7 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 
 	slog.Debug("Fetched klines from API", "length", len(candles))
 
-	cmd := b.Strategy.Start(candles)
+	cmd, info := b.Strategy.Start(candles)
 
 	slog.Info("Scanned", "command", cmd, "bot", b)
 
@@ -112,7 +112,7 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 	default:
 		slog.Debug("Order command not identified", "name", b.Name, "command", cmd)
 	}
-
+	b.StrategyInfo = info
 	b.LastScanned = time.Now()
 
 }

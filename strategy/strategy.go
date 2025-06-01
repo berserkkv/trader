@@ -8,7 +8,7 @@ import (
 
 type Strategy interface {
 	Name() string
-	Start(candles []model.Candle) order.Command
+	Start(candles []model.Candle) (order.Command, string)
 }
 
 func GetStrategy(name string) Strategy {
@@ -29,6 +29,8 @@ func GetStrategy(name string) Strategy {
 		return &BBHA3{}
 	case "RANDOM":
 		return &Random{}
+	case "S":
+		return &Supertrend{}
 	default:
 		slog.Error("Strategy not found", "name", name)
 		return nil
