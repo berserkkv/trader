@@ -42,19 +42,22 @@ func runBothFather(bf *botFather.BotFather) {
 		//strategy.HAEMAStrategy{},
 		//strategy.BBHAStrategy{},
 		//strategy.BBHA2Strategy{},
-		strategy.BBHA3{},
+		//strategy.BBHA3{},
 		//strategy.HASmoothedEMAStrategy{},
 		//strategy.Random{},
 		strategy.Supertrend{},
+		strategy.Supertrend2{},
 	}
 
 	tfs := []timeframe.Timeframe{
 		timeframe.MINUTE_1,
 		timeframe.MINUTE_15,
+		timeframe.HOUR_1,
 	}
 
 	smbs := []symbol.Symbol{
 		symbol.SOLUSDT,
+		symbol.ETHUSDT,
 	}
 
 	for _, tf := range tfs {

@@ -31,6 +31,8 @@ func GetStrategy(name string) Strategy {
 		return &Random{}
 	case "S":
 		return &Supertrend{}
+	case "S2":
+		return &Supertrend2{}
 	default:
 		slog.Error("Strategy not found", "name", name)
 		return nil
