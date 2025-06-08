@@ -3,6 +3,7 @@ package calculator
 import (
 	"github.com/berserkkv/trader/constant"
 	"github.com/berserkkv/trader/model/enum/order"
+	"math"
 )
 
 func CalculateStopLoss(price float64, percent float64, orderType order.Command) float64 {
@@ -49,4 +50,28 @@ func CalculateRoe(entryPrice, exitPrice, leverage float64, orderType order.Comma
 		return ((entryPrice - exitPrice) / entryPrice) * 100 * leverage
 	}
 	return 0
+}
+
+func CalculatePairTradingSpread(prices1, prices2 []float64) float64 {
+	var spread []float64
+	for i := range prices1 {
+		spread = append(spread, math.Log(prices1[i])-math.Log(prices2[i]))
+	}
+
+	n := float64(len(spread))
+	var sum, mean, stddev float64
+
+	for _, v := range spread {
+		sum += v
+	}
+	mean = sum / n
+
+	for _, v := range spread {
+		stddev += math.Pow(v-mean, 2)
+	}
+	stddev = math.Sqrt(stddev / n)
+
+	latest := spread[len(spread)-1]
+
+	return (latest - mean) / stddev
 }

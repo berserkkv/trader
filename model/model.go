@@ -46,6 +46,30 @@ type CreateBotRequest struct {
 	StopLoss   float64 `json:"stopLoss" binding:"required"`
 }
 
+type PairOrder struct {
+	ID                 int64         `gorm:"primaryKey;autoIncrement;not null" json:"id"`
+	Symbol1            symbol.Symbol `gorm:"not null" json:"symbol1"`
+	Symbol2            symbol.Symbol `gorm:"not null" json:"symbol2"`
+	Type1              order.Command `gorm:"not null" json:"type1"`
+	Type2              order.Command `gorm:"not null" json:"type2"`
+	BotID              int64         `gorm:"not null" json:"botId"`
+	EntryPrice1        float64       `gorm:"not null" json:"entryPrice1"`
+	EntryPrice2        float64       `gorm:"not null" json:"entryPrice2"`
+	ExitPrice1         float64       `gorm:"not null" json:"exitPrice1"`
+	ExitPrice2         float64       `gorm:"not null" json:"exitPrice2"`
+	Quantity1          float64       `gorm:"not null" json:"quantity1"`
+	Quantity2          float64       `gorm:"not null" json:"quantity2"`
+	ProfitLoss1        float64       `gorm:"not null" json:"profitLoss1"`
+	ProfitLoss2        float64       `gorm:"not null" json:"profitLoss2"`
+	ProfitLossPercent1 float64       `gorm:"not null" json:"profitLossPercent1"`
+	ProfitLossPercent2 float64       `gorm:"not null" json:"profitLossPercent2"`
+	CreatedTime        time.Time     `gorm:"not null" json:"createdTime"`
+	ClosedTime         time.Time     `gorm:"not null" json:"closedTime"`
+	Fee1               float64       `gorm:"not null" json:"fee1"`
+	Fee2               float64       `gorm:"not null" json:"fee2"`
+	Leverage           float64       `gorm:"not null" json:"leverage"`
+}
+
 type Statistics struct {
 	Pnl  float64   `json:"pnl"`
 	Time time.Time `json:"time"`

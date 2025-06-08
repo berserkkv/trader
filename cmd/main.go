@@ -7,7 +7,10 @@ import (
 	"github.com/berserkkv/trader/database"
 	"github.com/berserkkv/trader/model/enum/symbol"
 	"github.com/berserkkv/trader/model/enum/timeframe"
+	"github.com/berserkkv/trader/pairBot"
+	"github.com/berserkkv/trader/pairBot/pairBotFather"
 	"github.com/berserkkv/trader/service"
+	"github.com/berserkkv/trader/service/pairBotService"
 	"github.com/berserkkv/trader/strategy"
 	"github.com/berserkkv/trader/tools/config"
 	logger "github.com/berserkkv/trader/tools/log"
@@ -20,14 +23,60 @@ func main() {
 
 	database.ConnectDB()
 
-	bf := botFather.GetBotFather()
+	//bf := botFather.GetBotFather()
+	//
+	//go runBothFather(bf)
 
-	go runBothFather(bf)
+	go runPairBots()
 
 	controller.Register()
 
 	slog.Info("Server started on port: 8080")
 
+}
+
+func runPairBots() {
+	bf := pairBotFather.GetPairBotFather()
+
+	capital := 100.0
+	leverage := 10.0
+	takeProfit := 1.5
+	stopLoss := 0.5
+
+	tfs := []timeframe.Timeframe{
+		timeframe.MINUTE_1,
+		timeframe.MINUTE_15,
+		timeframe.HOUR_1,
+	}
+
+	smbs := [][]symbol.Symbol{
+		[]symbol.Symbol{symbol.BTCUSDT, symbol.ETHUSDT},
+		[]symbol.Symbol{symbol.BTCUSDT, symbol.SOLUSDT},
+		[]symbol.Symbol{symbol.ETHUSDT, symbol.SOLUSDT},
+		[]symbol.Symbol{symbol.SOLUSDT, symbol.AVAXUSDT},
+	}
+
+	for _, tf := range tfs {
+		for _, smb := range smbs {
+			b := pairBot.NewPairBot(smb[0], smb[1], tf, capital, leverage, takeProfit, stopLoss)
+			_, err := pairBotService.SaveBot(b)
+			if err != nil {
+				slog.Debug("Failed to save bot: ", err)
+			}
+		}
+	}
+
+	bots := pairBotService.GetAllBots(map[string]interface{}{})
+
+	for i := range bots {
+		bf.AddBot(&bots[i])
+		if bots[i].InPos {
+			bf.IncreaseTotalBotsInOrder()
+		}
+	}
+
+	go bf.CheckAndStartMonitoring()
+	bf.Start()
 }
 
 func runBothFather(bf *botFather.BotFather) {
