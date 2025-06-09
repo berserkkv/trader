@@ -18,7 +18,7 @@ func (s HASmoothedEMAStrategy) Name() string {
 // Otherwise, waits — filters trades using trend confirmation.
 
 func (s HASmoothedEMAStrategy) Start(candles []model.Candle) (order.Command, string) {
-	ema40 := ta.CalculateEMA(candles, 40)
+	ema40 := ta.EMA(candles, 40)
 
 	ha := ta.CalculateSmoothedHeikinAshi(candles, 3)
 

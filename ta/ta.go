@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-func CalculateBollingerPercentB(candles []model.Candle, period int) []float64 {
+func BollingerPercentB(candles []model.Candle, period int) []float64 {
 	n := len(candles)
 	result := make([]float64, n)
 
@@ -32,7 +32,7 @@ func CalculateBollingerPercentB(candles []model.Candle, period int) []float64 {
 	return result
 }
 
-func CalculateEMA(candles []model.Candle, period int) []float64 {
+func EMA(candles []model.Candle, period int) []float64 {
 	n := len(candles)
 	result := make([]float64, n)
 
@@ -145,4 +145,34 @@ func Supertrend(candles []model.Candle, atrPeriod int, factor float64) ([]float6
 	}
 
 	return supertrend, direction
+}
+
+// CalculateSLMA calculates the Smoothed Linear Moving Average over a slice of float64
+func SLMA(prices []float64, period int) []float64 {
+	if len(prices) < period {
+		return nil
+	}
+
+	slma := make([]float64, 0, len(prices)-period+1)
+	weightSum := period * (period + 1) / 2
+
+	for i := 0; i <= len(prices)-period; i++ {
+		var weightedSum float64
+		for j := 0; j < period; j++ {
+			weight := j + 1
+			weightedSum += prices[i+j] * float64(weight)
+		}
+		slma = append(slma, weightedSum/float64(weightSum))
+	}
+
+	return slma
+}
+
+func CandleColor(c model.Candle) int {
+	if c.Close > c.Open {
+		return 1
+	} else if c.Close < c.Open {
+		return -1
+	}
+	return 0
 }

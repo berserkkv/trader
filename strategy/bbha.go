@@ -16,7 +16,7 @@ func (s BBHAStrategy) Name() string {
 
 func (s BBHAStrategy) Start(candles []model.Candle) (order.Command, string) {
 
-	bb20 := ta.CalculateBollingerPercentB(candles, 20)
+	bb20 := ta.BollingerPercentB(candles, 20)
 	ha := ta.CalculateHeikinAshi(candles)
 	changed, lastColor := ta.DetectHeikinAshiColorChange(ha)
 

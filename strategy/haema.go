@@ -19,7 +19,7 @@ func (s HAEMAStrategy) Name() string {
 // Otherwise, waits — filters trades using trend confirmation.
 
 func (s HAEMAStrategy) Start(candles []model.Candle) (order.Command, string) {
-	ema40 := ta.CalculateEMA(candles, 40)
+	ema40 := ta.EMA(candles, 40)
 
 	ha := ta.CalculateHeikinAshi(candles)
 

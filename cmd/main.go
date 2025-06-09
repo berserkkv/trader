@@ -23,9 +23,9 @@ func main() {
 
 	database.ConnectDB()
 
-	//bf := botFather.GetBotFather()
-	//
-	//go runBothFather(bf)
+	bf := botFather.GetBotFather()
+
+	go runBothFather(bf)
 
 	go runPairBots()
 
@@ -94,8 +94,9 @@ func runBothFather(bf *botFather.BotFather) {
 		//strategy.BBHA3{},
 		//strategy.HASmoothedEMAStrategy{},
 		//strategy.Random{},
-		strategy.Supertrend{},
-		strategy.Supertrend2{},
+		//strategy.Supertrend{},
+		//strategy.Supertrend2{},
+		strategy.HA_SLMA{},
 	}
 
 	tfs := []timeframe.Timeframe{
@@ -106,7 +107,6 @@ func runBothFather(bf *botFather.BotFather) {
 
 	smbs := []symbol.Symbol{
 		symbol.SOLUSDT,
-		symbol.ETHUSDT,
 	}
 
 	for _, tf := range tfs {
