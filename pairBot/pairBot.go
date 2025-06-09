@@ -143,11 +143,18 @@ func (b *PairBot) ClosePosition(curPrice1, curPrice2 float64) (model.PairOrder, 
 	pnl2 = calculator.CalculatePNL(curPrice2, b.OrderCapitalWithLeverage2, b.OrderQuantity2, b.OrderType2)
 	pnlPercent2 = calculator.CalculateRoe(b.OrderEntryPrice2, curPrice2, b.Leverage, b.OrderType2)
 
+	if pnl1+pnl2 > 0 {
+		b.TotalWins++
+	} else {
+		b.TotalLosses++
+	}
+
 	b.OrderFee1 += fee1
 	b.OrderFee2 += fee2
-
-	b.CurrentCapital1 += b.OrderCapital1 + pnl1
-	b.CurrentCapital2 += b.OrderCapital2 + pnl2
+	totalCapital := b.OrderCapital1 + b.OrderCapital2 + pnl1 + pnl2
+	halfCapital := totalCapital / 2
+	b.CurrentCapital1 += halfCapital
+	b.CurrentCapital2 += halfCapital
 
 	closedOrder := model.PairOrder{
 		Symbol1:            b.Symbol1,
@@ -185,6 +192,16 @@ func (b *PairBot) ClosePosition(curPrice1, curPrice2 float64) (model.PairOrder, 
 	b.OrderScannedTime = time.Time{}
 	b.Pnl1 = 0
 	b.Roe1 = 0
+	b.OrderEntryPrice2 = 0
+	b.OrderStopLoss2 = 0
+	b.OrderTakeProfit2 = 0
+	b.OrderType2 = ""
+	b.OrderCapital2 = 0
+	b.OrderCapitalWithLeverage2 = 0
+	b.OrderQuantity2 = 0
+	b.OrderFee2 = 0
+	b.Pnl2 = 0
+	b.Roe2 = 0
 
 	return closedOrder, nil
 }
@@ -214,11 +231,11 @@ func (b *PairBot) ShouldOpenPosition() order.Command {
 func (b *PairBot) ShouldClosePosition() bool {
 	// if orderType is short then zScore was more than 2
 	if b.OrderType1 == order.SHORT {
-		if b.ZScore <= -2 {
+		if b.ZScore <= 1 {
 			return true
 		}
 	} else {
-		if b.ZScore >= 2 {
+		if b.ZScore >= -1 {
 			return true
 		}
 	}

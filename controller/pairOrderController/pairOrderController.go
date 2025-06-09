@@ -42,6 +42,8 @@ func GetOrderStatistics(c *gin.Context) {
 	//sort.Slice(r, func(i, j int) bool {
 	//	return r[i].Time.Before(r[j].Time)
 	//})
+	//
+	//fmt.Println(r)
 	c.JSON(200, s)
 }
 
