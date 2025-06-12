@@ -216,13 +216,11 @@ func (b *PairBot) UpdatePnlAndRoe(curPrice1, curPrice2 float64) {
 }
 
 func (b *PairBot) ShouldOpenPosition() order.Command {
-	price1, price2 := b.GetKlines()
-	zScore := calculator.CalculatePairTradingSpread(price1, price2)
-	b.ZScore = zScore
+	b.UpdateZScore()
 
-	if zScore >= 2 {
+	if b.ZScore >= 2 {
 		return order.SHORT
-	} else if zScore <= -2 {
+	} else if b.ZScore <= -2 {
 		return order.LONG
 	}
 	return order.WAIT
@@ -240,6 +238,11 @@ func (b *PairBot) ShouldClosePosition() bool {
 		}
 	}
 	return false
+}
+
+func (b *PairBot) UpdateZScore() {
+	price1, price2 := b.GetKlines()
+	b.ZScore = calculator.CalculatePairTradingSpread(price1, price2)
 }
 
 func (b *PairBot) CanOpenPosition() error {

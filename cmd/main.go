@@ -46,12 +46,12 @@ func runPairBots() {
 	tfs := []timeframe.Timeframe{
 		timeframe.MINUTE_1,
 		timeframe.MINUTE_15,
-		timeframe.HOUR_1,
+		//timeframe.HOUR_1,
 	}
 
 	smbs := [][]symbol.Symbol{
-		[]symbol.Symbol{symbol.BTCUSDT, symbol.ETHUSDT},
-		[]symbol.Symbol{symbol.BTCUSDT, symbol.SOLUSDT},
+		//[]symbol.Symbol{symbol.BTCUSDT, symbol.ETHUSDT},
+		//[]symbol.Symbol{symbol.BTCUSDT, symbol.SOLUSDT},
 		[]symbol.Symbol{symbol.ETHUSDT, symbol.SOLUSDT},
 		[]symbol.Symbol{symbol.SOLUSDT, symbol.AVAXUSDT},
 	}
@@ -97,6 +97,7 @@ func runBothFather(bf *botFather.BotFather) {
 		//strategy.Supertrend{},
 		//strategy.Supertrend2{},
 		strategy.HA_SLMA{},
+		strategy.SLMATriple{},
 	}
 
 	tfs := []timeframe.Timeframe{

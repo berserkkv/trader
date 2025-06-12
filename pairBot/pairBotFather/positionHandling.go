@@ -48,7 +48,10 @@ func (bf *PairBotFather) monitorPosition() {
 			curPrice1 := b.Connector.GetPrice(b.Symbol1)
 			curPrice2 := b.Connector.GetPrice(b.Symbol2)
 
-			if b.ShouldClosePosition() {
+			b.UpdateZScore()
+			b.UpdatePnlAndRoe(curPrice1, curPrice2)
+
+			if b.ShouldClosePosition() || b.Roe1+b.Roe2 <= -10 {
 				closedOrder, err := b.ClosePosition(curPrice1, curPrice2)
 				if err != nil {
 					slog.Error("Can't close position", "error", err.Error(), "botName", b.Name)
@@ -60,7 +63,7 @@ func (bf *PairBotFather) monitorPosition() {
 				closedOrders = append(closedOrders, closedOrder)
 				slog.Debug("Position closed, bot ready for new orders", "botName", b.Name)
 			} else {
-				b.UpdatePnlAndRoe(curPrice1, curPrice2)
+
 				b.OrderScannedTime = time.Now()
 				_, err := pairBotRepository.UpdateBot(b)
 				if err != nil {
