@@ -32,13 +32,13 @@ func (s *SlmaBb) Start(candles []model.Candle) (order.Command, string) {
 
 	info := fmt.Sprintf("price=%.2f, bb20=%.2f, slma=%.2f", lastClosePrice, lastBB20, lastSLMA20)
 
-	if lastBB20 > 90 {
+	if lastBB20 > 0.9 {
 		s.bbState = state.Above90
 		info += fmt.Sprintf(" bbState=%s", s.bbState)
 		return order.WAIT, "Wait " + info
 	}
 
-	if lastBB20 < 10 {
+	if lastBB20 < 0.1 {
 		s.bbState = state.Under10
 		info += fmt.Sprintf(" bbState=%s", s.bbState)
 		return order.WAIT, "Wait " + info
