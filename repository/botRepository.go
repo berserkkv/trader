@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/berserkkv/trader/bot"
 	"github.com/berserkkv/trader/database"
+	"github.com/berserkkv/trader/model"
 	"github.com/berserkkv/trader/strategy"
 	"log/slog"
 )
@@ -51,4 +52,15 @@ func UpdateAllBots(bots []*bot.Bot) []error {
 	}
 
 	return errs
+}
+
+func DeleteBotById(id int64) {
+	if err := database.DB.Where("bot_id = ?", id).Delete(&model.Order{}).Error; err != nil {
+		slog.Error("Failed to delete orders", "error", err)
+		return
+	}
+
+	if err := database.DB.Delete(&bot.Bot{}, id).Error; err != nil {
+		slog.Error("Failed to delete bot", "error", err)
+	}
 }

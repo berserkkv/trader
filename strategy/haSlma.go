@@ -7,12 +7,14 @@ import (
 	"github.com/berserkkv/trader/ta"
 )
 
-type HA_SLMA struct{}
-
-func (HA_SLMA) Name() string {
-	return "HA_SLMA"
+type HaSlma struct {
 }
-func (s HA_SLMA) Start(candles []model.Candle) (order.Command, string) {
+
+func (*HaSlma) Name() string {
+	return "HaSlma"
+}
+
+func (s *HaSlma) Start(candles []model.Candle) (order.Command, string) {
 	closePrice := make([]float64, len(candles))
 	for i, c := range candles {
 		closePrice[i] = c.Close
@@ -23,7 +25,7 @@ func (s HA_SLMA) Start(candles []model.Candle) (order.Command, string) {
 
 	changed, color := ta.DetectHeikinAshiColorChange(ha)
 
-	info := fmt.Sprintf("price=%.2f, slma=%.2f, HAColor=%s, HAChanged=%t",
+	info := fmt.Sprintf("price=%.2f, bbState=%.2f, HAColor=%s, HAChanged=%t",
 		candles[len(candles)-2].Close, slma20[len(slma20)-1], color, changed)
 	z := len(candles) - 1
 

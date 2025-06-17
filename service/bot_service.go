@@ -116,3 +116,11 @@ func CreateBot(tradingSymbol, strategyName, tradingTimeFrame string, capital, le
 
 	return savedBot, err
 }
+
+func DeleteBot(botId int64) error {
+
+	repository.DeleteBotById(botId)
+	botFather.GetBotFather().DeleteBot(botId)
+
+	return nil
+}

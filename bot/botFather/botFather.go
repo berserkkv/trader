@@ -159,7 +159,20 @@ func (bf *BotFather) DecreaseTotalBotsInOrder() {
 	bf.mu.Unlock()
 }
 
-func (bf *BotFather) RemoveBot(id int64) {
+func (bf *BotFather) DeleteBot(id int64) {
+	bf.mu.Lock()
+	defer bf.mu.Unlock()
+
+	bot, ok := bf.bots[id]
+	if !ok {
+		return // bot not found, nothing to delete
+	}
+
+	if bot.InPos {
+		bot.ClosePosition(100)
+		bf.DecreaseTotalBotsInOrder()
+	}
+
 	delete(bf.bots, id)
 }
 

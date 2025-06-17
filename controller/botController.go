@@ -104,6 +104,19 @@ func CreateBot(c *gin.Context) {
 	c.JSON(200, bot)
 }
 
+func DeleteBot(c *gin.Context) {
+	botId, ok := extractId(c)
+	if !ok {
+		return
+	}
+
+	err := service.DeleteBot(botId)
+	if err != nil {
+		slog.Error("Error deleting bot", "id", botId, "error", err)
+	}
+	c.JSON(200, gin.H{"message": "Deleted bot", "id": botId})
+}
+
 func extractId(c *gin.Context) (int64, bool) {
 	id := c.Param("id")
 	botID, err := strconv.Atoi(id)

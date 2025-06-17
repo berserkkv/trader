@@ -21,8 +21,7 @@ type PairBot struct {
 	IsNotActive               bool                `gorm:"default:false" json:"isNotActive"`
 	Timeframe                 timeframe.Timeframe `gorm:"not null" json:"timeframe"`
 	Connector                 connector.Connector `gorm:"-" json:"-"`
-	CurrentCapital1           float64             `gorm:"not null" json:"currentCapital1"`
-	CurrentCapital2           float64             `gorm:"not null" json:"currentCapital2"`
+	CurrentCapital            float64             `gorm:"not null" json:"currentCapital"`
 	LastScanned               time.Time           `gorm:"not null" json:"lastScanned"`
 	TotalWins                 int64               `json:"totalWins"`
 	TotalLosses               int64               `json:"totalLosses"`
@@ -47,8 +46,7 @@ type PairBot struct {
 	OrderStopLoss2            float64             `json:"orderStopLoss2"`
 	OrderTakeProfit1          float64             `json:"orderTakeProfit1"`
 	OrderTakeProfit2          float64             `json:"orderTakeProfit2"`
-	OrderFee1                 float64             `json:"orderFee1"`
-	OrderFee2                 float64             `json:"orderFee2"`
+	OrderFee                  float64             `json:"orderFee"`
 	Pnl1                      float64             `json:"pnl1"`
 	Pnl2                      float64             `json:"pnl2"`
 	Roe1                      float64             `json:"roe1"`
@@ -58,16 +56,15 @@ type PairBot struct {
 func NewPairBot(smb1, smb2 symbol.Symbol, timeframe timeframe.Timeframe, capital, leverage, takeProfit, stopLoss float64) *PairBot {
 	name := string(smb1) + "_" + string(smb2) + "_" + string(timeframe)
 	return &PairBot{
-		Name:            name,
-		Symbol1:         smb1,
-		Symbol2:         smb2,
-		Timeframe:       timeframe,
-		Connector:       connector.BinanceConnector{},
-		CurrentCapital1: capital,
-		CurrentCapital2: capital,
-		Leverage:        leverage,
-		TakeProfit:      takeProfit,
-		StopLoss:        stopLoss,
+		Name:           name,
+		Symbol1:        smb1,
+		Symbol2:        smb2,
+		Timeframe:      timeframe,
+		Connector:      connector.BinanceConnector{},
+		CurrentCapital: capital,
+		Leverage:       leverage,
+		TakeProfit:     takeProfit,
+		StopLoss:       stopLoss,
 	}
 
 }
@@ -89,20 +86,16 @@ func (b *PairBot) OpenPosition(cmd1 order.Command) error {
 	b.OrderType1 = cmd1
 	b.OrderType2 = cmd2
 
-	capital1 := b.CurrentCapital1
-	capital2 := b.CurrentCapital2
+	capital := b.CurrentCapital
 
-	b.CurrentCapital1 -= capital1
-	b.CurrentCapital2 -= capital2
+	b.CurrentCapital -= capital
 
-	fee1 := calculator.CalculateMakerFee(capital1)
-	fee2 := calculator.CalculateMakerFee(capital2)
+	fee := calculator.CalculateMakerFee(capital)
 
-	capital1 -= fee1
-	capital2 -= fee2
+	capital -= fee
 
-	b.OrderCapitalWithLeverage1 = b.Leverage * capital1
-	b.OrderCapitalWithLeverage2 = b.Leverage * capital2
+	b.OrderCapitalWithLeverage1 = b.Leverage * capital / 2
+	b.OrderCapitalWithLeverage2 = b.Leverage * capital / 2
 
 	now := time.Now()
 	b.OrderQuantity1 = calculator.CalculateBuyQuantity(price1, b.OrderCapitalWithLeverage1)
@@ -110,13 +103,12 @@ func (b *PairBot) OpenPosition(cmd1 order.Command) error {
 
 	b.OrderEntryPrice1 = price1
 	b.OrderEntryPrice2 = price2
-	b.OrderCapital1 = capital1
-	b.OrderCapital2 = capital2
+	b.OrderCapital1 = capital / 2
+	b.OrderCapital2 = capital / 2
 	b.InPos = true
 	b.OrderCreatedTime = now
 	b.OrderScannedTime = now
-	b.OrderFee1 = fee1
-	b.OrderFee2 = fee2
+	b.OrderFee = fee
 
 	return nil
 }
@@ -149,12 +141,9 @@ func (b *PairBot) ClosePosition(curPrice1, curPrice2 float64) (model.PairOrder, 
 		b.TotalLosses++
 	}
 
-	b.OrderFee1 += fee1
-	b.OrderFee2 += fee2
+	b.OrderFee += fee1 + fee2
 	totalCapital := b.OrderCapital1 + b.OrderCapital2 + pnl1 + pnl2
-	halfCapital := totalCapital / 2
-	b.CurrentCapital1 += halfCapital
-	b.CurrentCapital2 += halfCapital
+	b.CurrentCapital += totalCapital
 
 	closedOrder := model.PairOrder{
 		Symbol1:            b.Symbol1,
@@ -174,8 +163,7 @@ func (b *PairBot) ClosePosition(curPrice1, curPrice2 float64) (model.PairOrder, 
 		ProfitLossPercent2: pnlPercent2,
 		CreatedTime:        b.OrderCreatedTime,
 		ClosedTime:         time.Now(),
-		Fee1:               b.OrderFee1,
-		Fee2:               b.OrderFee2,
+		Fee:                b.OrderFee,
 		Leverage:           b.Leverage,
 	}
 
@@ -188,7 +176,7 @@ func (b *PairBot) ClosePosition(curPrice1, curPrice2 float64) (model.PairOrder, 
 	b.OrderCapitalWithLeverage1 = 0
 	b.OrderCreatedTime = time.Time{}
 	b.OrderQuantity1 = 0
-	b.OrderFee1 = 0
+	b.OrderFee = 0
 	b.OrderScannedTime = time.Time{}
 	b.Pnl1 = 0
 	b.Roe1 = 0
@@ -199,7 +187,6 @@ func (b *PairBot) ClosePosition(curPrice1, curPrice2 float64) (model.PairOrder, 
 	b.OrderCapital2 = 0
 	b.OrderCapitalWithLeverage2 = 0
 	b.OrderQuantity2 = 0
-	b.OrderFee2 = 0
 	b.Pnl2 = 0
 	b.Roe2 = 0
 
@@ -256,7 +243,7 @@ func (b *PairBot) CanOpenPosition() error {
 		return errors.New("bot is already in open position")
 	}
 
-	if b.CurrentCapital1+b.CurrentCapital2 <= 90 {
+	if b.CurrentCapital <= 85 {
 		slog.Debug("bot can't open position, capital not enough", "name", b.Name)
 		return errors.New("bot can't open position, capital not enough")
 	}
@@ -265,7 +252,7 @@ func (b *PairBot) CanOpenPosition() error {
 }
 
 func (b *PairBot) String() string {
-	return fmt.Sprintf("{Name: %s, InPos: %t, ZScore: %.2f, Capital1: %.2f, Capital2: %.2f}", b.Name, b.InPos, b.ZScore, b.CurrentCapital1, b.CurrentCapital2)
+	return fmt.Sprintf("{Name: %s, InPos: %t, ZScore: %.2f, Capital: %.2f}", b.Name, b.InPos, b.ZScore, b.CurrentCapital)
 }
 
 func (b *PairBot) GetKlines() ([]float64, []float64) {

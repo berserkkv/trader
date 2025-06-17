@@ -65,8 +65,7 @@ type PairOrder struct {
 	ProfitLossPercent2 float64       `gorm:"not null" json:"profitLossPercent2"`
 	CreatedTime        time.Time     `gorm:"not null" json:"createdTime"`
 	ClosedTime         time.Time     `gorm:"not null" json:"closedTime"`
-	Fee1               float64       `gorm:"not null" json:"fee1"`
-	Fee2               float64       `gorm:"not null" json:"fee2"`
+	Fee                float64       `gorm:"not null" json:"fee"`
 	Leverage           float64       `gorm:"not null" json:"leverage"`
 }
 

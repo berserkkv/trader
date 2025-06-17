@@ -96,8 +96,9 @@ func runBothFather(bf *botFather.BotFather) {
 		//strategy.Random{},
 		//strategy.Supertrend{},
 		//strategy.Supertrend2{},
-		strategy.HA_SLMA{},
-		strategy.SLMATriple{},
+		&strategy.HaSlma{},
+		&strategy.TripleCandle{},
+		&strategy.SlmaBb{},
 	}
 
 	tfs := []timeframe.Timeframe{

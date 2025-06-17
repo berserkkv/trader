@@ -7,12 +7,13 @@ import (
 	"github.com/berserkkv/trader/ta"
 )
 
-type SLMATriple struct{}
+type TripleCandle struct{}
 
-func (SLMATriple) Name() string {
-	return "SLMATriple"
+func (TripleCandle) Name() string {
+	return "3Can"
 }
-func (s SLMATriple) Start(candles []model.Candle) (order.Command, string) {
+
+func (s TripleCandle) Start(candles []model.Candle) (order.Command, string) {
 	cur := ta.CandleColor(candles[len(candles)-1])
 	prev := ta.CandleColor(candles[len(candles)-2])
 	prev2 := ta.CandleColor(candles[len(candles)-3])

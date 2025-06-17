@@ -33,10 +33,12 @@ func GetStrategy(name string) Strategy {
 		return &Supertrend{}
 	case "S2":
 		return &Supertrend2{}
-	case "HA_SLMA":
-		return &HA_SLMA{}
-	case "SLMATriple":
-		return &SLMATriple{}
+	case "HaSlma":
+		return &HaSlma{}
+	case "3Can":
+		return &TripleCandle{}
+	case "SlmaBb":
+		return &SlmaBb{}
 	default:
 		slog.Error("Strategy not found", "name", name)
 		return nil

@@ -34,6 +34,7 @@ func Register() {
 		bots.PATCH("/:id/stop", StopBot)
 		bots.PATCH("/:id/start", StartBot)
 		bots.PATCH("/:id/close_position", ClosePosition)
+		bots.DELETE("/:id", DeleteBot)
 	}
 
 	orders := r.Group("/api/orders")

@@ -33,7 +33,7 @@ func TestHA_SLMAStrategy_LongSignal(t *testing.T) {
 	candles[25] = model.Candle{Open: 93, High: 105, Low: 92, Close: 104}
 
 	// Create strategy
-	strat := &HA_SLMA{}
+	strat := &HaSlma{}
 
 	// First call: should detect HA color change
 	cmd, info := strat.Start(candles)

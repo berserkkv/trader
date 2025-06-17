@@ -47,7 +47,7 @@ func (bf *PairBotFather) runBots(minute int, hour int) {
 			continue
 		}
 
-		if b.CurrentCapital1 <= 85 || b.CurrentCapital2 <= 85 {
+		if b.CurrentCapital <= 85 {
 			b.IsNotActive = true
 			continue
 		}
@@ -186,8 +186,8 @@ func (bf *PairBotFather) StartBot(id int64) (*pairBot.PairBot, error) {
 	if !ok {
 		return nil, fmt.Errorf("bot with id %d not found", id)
 	}
-	if b.CurrentCapital1 <= 80 {
-		return nil, fmt.Errorf("bot with id %d has capital less than 80", id)
+	if b.CurrentCapital <= 85 {
+		return nil, fmt.Errorf("bot with id %d has capital less than 85", id)
 	}
 
 	b.IsNotActive = false
