@@ -229,6 +229,10 @@ func (b *PairBot) ShouldClosePosition() bool {
 
 func (b *PairBot) UpdateZScore() {
 	price1, price2 := b.GetKlines()
+	if price1 == nil || price2 == nil {
+		slog.Error("Get klines from API", "price1", price1, "price2", price2)
+		return
+	}
 	b.ZScore = calculator.CalculatePairTradingSpread(price1, price2)
 }
 
@@ -258,6 +262,10 @@ func (b *PairBot) String() string {
 func (b *PairBot) GetKlines() ([]float64, []float64) {
 	candles1 := b.Connector.GetCandles(b.Symbol1, b.Timeframe, 200)
 	candles2 := b.Connector.GetCandles(b.Symbol2, b.Timeframe, 200)
+
+	if candles1 == nil || candles2 == nil {
+		return nil, nil
+	}
 
 	closedPrice1 := make([]float64, len(candles1))
 	closedPrice2 := make([]float64, len(candles2))

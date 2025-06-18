@@ -1,10 +1,12 @@
-package controller
+package router
 
 import (
 	"bytes"
 	"fmt"
+	controller "github.com/berserkkv/trader/controller/interface"
 	"github.com/berserkkv/trader/controller/pairBotController"
 	"github.com/berserkkv/trader/controller/pairOrderController"
+	"github.com/berserkkv/trader/httpctx/ctxImpl"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -21,31 +23,44 @@ func printBody(c *gin.Context) {
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(b))
 }
 
-func Register() {
+func Register(botController controller.BotController) {
 	r := gin.Default()
 
 	r.Use(cors.Default())
 
 	bots := r.Group("/api/bots")
 	{
-		bots.GET("", GetAllBots)
-		bots.POST("", CreateBot)
-		bots.GET("/:id", GetBotById)
-		bots.PATCH("/:id/stop", StopBot)
-		bots.PATCH("/:id/start", StartBot)
-		bots.PATCH("/:id/close_position", ClosePosition)
-		bots.DELETE("/:id", DeleteBot)
+		bots.GET("", func(c *gin.Context) {
+			botController.GetAllBots(&ctxImpl.GinContext{C: c})
+		})
+		bots.POST("", func(c *gin.Context) {
+			botController.CreateBot(&ctxImpl.GinContext{C: c})
+		})
+		bots.GET("/:id", func(c *gin.Context) {
+			botController.GetBotByID(&ctxImpl.GinContext{C: c})
+		})
+		bots.PATCH("/:id/stop", func(c *gin.Context) {
+			botController.StopBot(&ctxImpl.GinContext{C: c})
+		})
+		bots.PATCH("/:id/start", func(c *gin.Context) {
+			botController.StartBot(&ctxImpl.GinContext{C: c})
+		})
+		bots.PATCH("/:id/close_position", func(c *gin.Context) {
+			botController.ClosePosition(&ctxImpl.GinContext{C: c})
+		})
+		bots.DELETE("/:id", func(c *gin.Context) {
+			botController.DeleteBot(&ctxImpl.GinContext{C: c})
+		})
 	}
-
-	orders := r.Group("/api/orders")
-	{
-		orders.GET("", GetOrders)
-		orders.POST("", CreateOrder)
-		orders.PUT("", UpdateOrder)
-		orders.GET("/by-bot", GetOrdersByBotId)
-		orders.GET("/statistics", GetOrderStatistics)
-
-	}
+	//orders := r.Group("/api/orders")
+	//{
+	//	orders.GET("", GetOrders)
+	//	orders.POST("", CreateOrder)
+	//	orders.PUT("", UpdateOrder)
+	//	orders.GET("/by-bot", GetOrdersByBotId)
+	//	orders.GET("/statistics", GetOrderStatistics)
+	//
+	//}
 
 	pairBots := r.Group("/api/pair_bots")
 	{

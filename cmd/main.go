@@ -3,13 +3,20 @@ package main
 import (
 	"github.com/berserkkv/trader/bot"
 	"github.com/berserkkv/trader/bot/botFather"
-	"github.com/berserkkv/trader/controller"
+	"github.com/berserkkv/trader/controller/controllerImpl"
+	controller "github.com/berserkkv/trader/controller/interface"
+	"github.com/berserkkv/trader/router"
+
+	//"github.com/berserkkv/trader/controller"
 	"github.com/berserkkv/trader/database"
 	"github.com/berserkkv/trader/model/enum/symbol"
 	"github.com/berserkkv/trader/model/enum/timeframe"
 	"github.com/berserkkv/trader/pairBot"
 	"github.com/berserkkv/trader/pairBot/pairBotFather"
-	"github.com/berserkkv/trader/service"
+	"github.com/berserkkv/trader/repository/impl/sqlite"
+	repository "github.com/berserkkv/trader/repository/interface"
+	serviceImpl "github.com/berserkkv/trader/service/impl"
+	service "github.com/berserkkv/trader/service/interface"
 	"github.com/berserkkv/trader/service/pairBotService"
 	"github.com/berserkkv/trader/strategy"
 	"github.com/berserkkv/trader/tools/config"
@@ -22,14 +29,26 @@ func main() {
 	logger.Init(cnf.Logger.Level, cnf.Env)
 
 	database.ConnectDB()
+	db := database.DB
 
 	bf := botFather.GetBotFather()
 
-	go runBothFather(bf)
+	var botRepo repository.BotRepository
+	botRepo = sqliteImpl.NewBotRepository(db)
 
-	go runPairBots()
+	var botSrv service.BotService
+	botSrv = serviceImpl.NewBotService(botRepo, bf)
 
-	controller.Register()
+	var botController controller.BotController
+	botController = controllerImpl.NewBotController(botSrv)
+
+	go runBothFather(bf, botSrv)
+
+	//go runPairBots()
+
+	//controller.Register()
+
+	router.Register(botController)
 
 	slog.Info("Server started on port: 8080")
 
@@ -79,7 +98,7 @@ func runPairBots() {
 	bf.Start()
 }
 
-func runBothFather(bf *botFather.BotFather) {
+func runBothFather(bf *botFather.BotFather, service service.BotService) {
 	capital := 100.0
 	leverage := 10.0
 	takeProfit := 1.5
@@ -115,7 +134,7 @@ func runBothFather(bf *botFather.BotFather) {
 		for _, st := range sts {
 			for _, smb := range smbs {
 				b := bot.NewBot(tf, st, smb, capital, leverage, takeProfit, stopLoss)
-				_, err := service.SaveBot(b)
+				_, err := service.Create(b)
 				if err != nil {
 					slog.Debug("Failed to save bot: ", err)
 				}
@@ -123,10 +142,10 @@ func runBothFather(bf *botFather.BotFather) {
 		}
 	}
 
-	bots := service.GetAllBots(map[string]interface{}{})
+	bots := service.GetAll(map[string]interface{}{})
 
 	for i := range bots {
-		bf.AddBot(&bots[i])
+		bf.AddBot(bots[i])
 		if bots[i].InPos {
 			bf.IncreaseTotalBotsInOrder()
 		}

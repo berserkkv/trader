@@ -14,6 +14,9 @@ func (TripleCandle) Name() string {
 }
 
 func (s TripleCandle) Start(candles []model.Candle) (order.Command, string) {
+	if len(candles) < 3 {
+		return order.WAIT, "Not enough candles"
+	}
 	cur := ta.CandleColor(candles[len(candles)-1])
 	prev := ta.CandleColor(candles[len(candles)-2])
 	prev2 := ta.CandleColor(candles[len(candles)-3])

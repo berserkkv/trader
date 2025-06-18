@@ -91,6 +91,11 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 
 	slog.Debug("Fetched klines from API", "length", len(candles))
 
+	if len(candles) == 0 {
+		slog.Error("Not enough candles")
+		return
+	}
+
 	cmd, info := b.Strategy.Start(candles)
 
 	slog.Info("Scanned", "command", cmd, "bot", b)

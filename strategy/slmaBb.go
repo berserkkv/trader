@@ -17,6 +17,9 @@ func (s *SlmaBb) Name() string {
 }
 
 func (s *SlmaBb) Start(candles []model.Candle) (order.Command, string) {
+	if len(candles) < 20 {
+		return order.WAIT, "Not enough candles"
+	}
 
 	bb20 := ta.BollingerPercentB(candles, 20)
 
