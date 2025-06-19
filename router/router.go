@@ -27,6 +27,8 @@ func Register(botController controller.BotController, orderController controller
 	r := gin.Default()
 
 	r.Use(cors.Default())
+	//r.Use(middleware.SlogLogger())
+	r.Use(gin.Recovery())
 
 	bots := r.Group("/api/bots")
 	{
