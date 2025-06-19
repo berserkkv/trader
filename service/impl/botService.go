@@ -8,6 +8,7 @@ import (
 	"github.com/berserkkv/trader/model/enum/symbol"
 	"github.com/berserkkv/trader/model/enum/timeframe"
 	repository "github.com/berserkkv/trader/repository/interface"
+	"github.com/berserkkv/trader/service/connector"
 	service "github.com/berserkkv/trader/service/interface"
 	"github.com/berserkkv/trader/strategy"
 	"log/slog"
@@ -23,7 +24,13 @@ func NewBotService(repo repository.BotRepository, bf *botFather.BotFather) *BotS
 }
 
 func (s *BotServiceImpl) GetAll(field map[string]interface{}) []*bot.Bot {
-	return s.r.GetAll(field)
+	bots := s.r.GetAll(field)
+
+	for i := range bots {
+		bots[i].Strategy = strategy.GetStrategy(bots[i].StrategyName)
+		bots[i].Connector = &connector.BinanceConnector{}
+	}
+	return bots
 }
 
 func (s *BotServiceImpl) GetById(id int64) *bot.Bot {

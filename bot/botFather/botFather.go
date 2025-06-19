@@ -87,6 +87,10 @@ func (bf *BotFather) runBots(minute int, hour int) {
 }
 
 func (bf *BotFather) runStrategy(b *bot.Bot) {
+	if b.Connector == nil {
+		slog.Error("No connector found")
+		return
+	}
 	candles := b.Connector.GetCandles(b.Symbol, b.Timeframe, 50)
 
 	slog.Debug("Fetched klines from API", "length", len(candles))
@@ -146,6 +150,7 @@ func (bf *BotFather) AddBot(bot *bot.Bot) {
 	}
 	if bot.Strategy == nil {
 		slog.Error("bot not added to BotFather, bot strategy is nil")
+		return
 	}
 
 	bf.bots[bot.Id] = bot

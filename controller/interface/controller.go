@@ -13,3 +13,11 @@ type BotController interface {
 	StopBot(c httpctx.Context)
 	ClosePosition(c httpctx.Context)
 }
+
+type OrderController interface {
+	GetAll(c httpctx.Context)
+	GetStatisticsByBotID(c httpctx.Context)
+	Create(c httpctx.Context)
+	Update(c httpctx.Context)
+	GetAllByBotID(c httpctx.Context)
+}

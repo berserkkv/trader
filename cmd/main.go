@@ -33,22 +33,18 @@ func main() {
 
 	bf := botFather.GetBotFather()
 
-	var botRepo repository.BotRepository
-	botRepo = sqliteImpl.NewBotRepository(db)
+	var botRepo repository.BotRepository = sqliteImpl.NewBotRepository(db)
+	var orderRepo repository.OrderRepository = sqliteImpl.NewOrderRepositoryImpl(db)
 
-	var botSrv service.BotService
-	botSrv = serviceImpl.NewBotService(botRepo, bf)
+	var botSrv service.BotService = serviceImpl.NewBotService(botRepo, bf)
+	var orderService service.OrderService = serviceImpl.NewOrderServiceImpl(orderRepo)
 
-	var botController controller.BotController
-	botController = controllerImpl.NewBotController(botSrv)
+	var botController controller.BotController = controllerImpl.NewBotController(botSrv)
+	var orderController controller.OrderController = controllerImpl.NewOrderControllerImpl(orderService)
 
 	go runBothFather(bf, botSrv)
 
-	//go runPairBots()
-
-	//controller.Register()
-
-	router.Register(botController)
+	router.Register(botController, orderController)
 
 	slog.Info("Server started on port: 8080")
 
@@ -116,7 +112,7 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 		//strategy.Supertrend{},
 		//strategy.Supertrend2{},
 		&strategy.HaSlma{},
-		&strategy.TripleCandle{},
+		//&strategy.TripleCandle{},
 		&strategy.SlmaBb{},
 	}
 

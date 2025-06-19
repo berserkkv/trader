@@ -23,7 +23,7 @@ func printBody(c *gin.Context) {
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(b))
 }
 
-func Register(botController controller.BotController) {
+func Register(botController controller.BotController, orderController controller.OrderController) {
 	r := gin.Default()
 
 	r.Use(cors.Default())
@@ -50,6 +50,25 @@ func Register(botController controller.BotController) {
 		})
 		bots.DELETE("/:id", func(c *gin.Context) {
 			botController.DeleteBot(&ctxImpl.GinContext{C: c})
+		})
+	}
+
+	orders := r.Group("/api/orders")
+	{
+		orders.GET("", func(c *gin.Context) {
+			orderController.GetAll(&ctxImpl.GinContext{C: c})
+		})
+		orders.POST("", func(c *gin.Context) {
+			orderController.Create(&ctxImpl.GinContext{C: c})
+		})
+		orders.PUT("", func(c *gin.Context) {
+			orderController.Update(&ctxImpl.GinContext{C: c})
+		})
+		orders.GET("/by-bot", func(c *gin.Context) {
+			orderController.GetAllByBotID(&ctxImpl.GinContext{C: c})
+		})
+		orders.GET("/statistics", func(c *gin.Context) {
+			orderController.GetStatisticsByBotID(&ctxImpl.GinContext{C: c})
 		})
 	}
 	//orders := r.Group("/api/orders")
