@@ -5,7 +5,7 @@ import (
 	"github.com/berserkkv/trader/bot"
 	"github.com/berserkkv/trader/model/enum/order"
 	"github.com/berserkkv/trader/model/enum/timeframe"
-	"github.com/berserkkv/trader/repository"
+	repository "github.com/berserkkv/trader/repository/interface"
 
 	"github.com/berserkkv/trader/service/tools"
 	"log/slog"
@@ -22,6 +22,8 @@ type BotFather struct {
 	bots              map[int64]*bot.Bot
 	totalBotsInOrder  int64
 	monitoringRunning bool
+	botRepo           repository.BotRepository
+	orderRepo         repository.OrderRepository
 	mu                sync.Mutex
 }
 
@@ -34,7 +36,7 @@ func (bf *BotFather) Start() {
 		hour := runTime.Hour()
 
 		bf.runBots(minute, hour)
-		repository.UpdateAllBots(bf.Bots())
+		bf.botRepo.UpdateAll(bf.Bots())
 	}
 }
 
@@ -126,10 +128,12 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 
 }
 
-func GetBotFather() *BotFather {
+func GetBotFather(botRepo repository.BotRepository, orderRepo repository.OrderRepository) *BotFather {
 	once.Do(func() {
 		instance = &BotFather{
-			bots: make(map[int64]*bot.Bot),
+			bots:      make(map[int64]*bot.Bot),
+			botRepo:   botRepo,
+			orderRepo: orderRepo,
 		}
 	})
 	return instance

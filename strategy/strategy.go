@@ -39,6 +39,8 @@ func GetStrategy(name string) Strategy {
 		return &TripleCandle{}
 	case "SlmaBb":
 		return &SlmaBb{}
+	case "3CanSlma":
+		return &TripleCandleSlma{}
 	default:
 		slog.Error("Strategy not found", "name", name)
 		return nil

@@ -3,7 +3,6 @@ package pairOrderController
 import (
 	"fmt"
 	"github.com/berserkkv/trader/model"
-	"github.com/berserkkv/trader/repository"
 	"github.com/berserkkv/trader/service/pairOrderService"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -66,8 +65,8 @@ func UpdateOrder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	updated := repository.UpdateOrder(order)
-	c.JSON(http.StatusCreated, updated)
+	//updated := repository.UpdateOrder(order)
+	//c.JSON(http.StatusCreated, updated)
 }
 
 func GetOrdersByBotId(c *gin.Context) {

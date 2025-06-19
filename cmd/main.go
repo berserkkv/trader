@@ -43,7 +43,8 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 		//strategy.Supertrend2{},
 		&strategy.HaSlma{},
 		//&strategy.TripleCandle{},
-		&strategy.SlmaBb{},
+		//&strategy.SlmaBb{},
+		&strategy.TripleCandleSlma{},
 	}
 
 	tfs := []timeframe.Timeframe{

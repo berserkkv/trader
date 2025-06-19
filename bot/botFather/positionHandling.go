@@ -2,7 +2,6 @@ package botFather
 
 import (
 	"github.com/berserkkv/trader/model"
-	"github.com/berserkkv/trader/repository"
 	"log/slog"
 	"time"
 )
@@ -62,7 +61,7 @@ func (bf *BotFather) monitorPosition() {
 				//b.GridOrderMonitor(curPrice)
 				b.ShiftStopLoss()
 				b.OrderScannedTime = time.Now()
-				_, err := repository.UpdateBot(b)
+				_, err := bf.botRepo.Update(b)
 				if err != nil {
 					slog.Error("Error updating bot", "error", err.Error(), "botName", b.Name)
 				}
@@ -71,11 +70,11 @@ func (bf *BotFather) monitorPosition() {
 		}
 
 		for i := range closedOrders {
-			_, err := repository.UpdateBot(bf.bots[closedOrders[i].BotID])
+			_, err := bf.botRepo.Update(bf.bots[closedOrders[i].BotID])
 			if err != nil {
 				slog.Error("Can't update database after closing order", "error", err.Error(), "botName", bf.bots[closedOrders[i].BotID].Name)
 			}
-			repository.CreateOrder(closedOrders[i])
+			_, _ = bf.orderRepo.Create(&closedOrders[i])
 		}
 		closedOrders = closedOrders[:0]
 	}
@@ -91,10 +90,10 @@ func (bf *BotFather) ClosePosition(botId int64) {
 
 	bf.DecreaseTotalBotsInOrder()
 
-	_, err = repository.UpdateBot(b)
+	_, err = bf.botRepo.Update(b)
 	if err != nil {
 		slog.Error("Can't update database after closing order", "error", err.Error(), "botName", b.Name)
 	}
-	repository.CreateOrder(closedOrder)
+	_, _ = bf.orderRepo.Create(&closedOrder)
 
 }

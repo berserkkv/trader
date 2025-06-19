@@ -11,7 +11,7 @@ type BotRepository interface {
 	Update(bot *bot.Bot) (*bot.Bot, error)
 	Create(bot *bot.Bot) (*bot.Bot, error)
 	Delete(id int64)
-	UpdateAll(bots []bot.Bot) []error
+	UpdateAll(bots []*bot.Bot) []error
 }
 
 type OrderRepository interface {

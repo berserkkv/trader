@@ -63,7 +63,7 @@ func (repo *BotRepository) Delete(id int64) {
 	}
 }
 
-func (repo *BotRepository) UpdateAll(bots []bot.Bot) []error {
+func (repo *BotRepository) UpdateAll(bots []*bot.Bot) []error {
 	var errs []error
 	for _, b := range bots {
 		if err := repo.db.Save(b).Error; err != nil {

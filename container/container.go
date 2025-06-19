@@ -33,12 +33,12 @@ func New() *Container {
 	database.ConnectDB()
 	db := database.DB
 
-	// Instantiate core components
-	bf := botFather.GetBotFather()
-
 	// Repositories
 	botRepo := sqliteImpl.NewBotRepository(db)
 	orderRepo := sqliteImpl.NewOrderRepositoryImpl(db)
+
+	// Instantiate core components
+	bf := botFather.GetBotFather(botRepo, orderRepo)
 
 	// Services
 	botService := serviceImpl.NewBotService(botRepo, bf)

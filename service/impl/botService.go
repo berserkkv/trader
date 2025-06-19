@@ -72,7 +72,7 @@ func (s *BotServiceImpl) Delete(id int64) error {
 	return nil
 }
 
-func (s *BotServiceImpl) UpdateAll(bots []bot.Bot) []error {
+func (s *BotServiceImpl) UpdateAll(bots []*bot.Bot) []error {
 	return s.r.UpdateAll(bots)
 }
 

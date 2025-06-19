@@ -11,7 +11,7 @@ type BotService interface {
 	Create(bot *bot.Bot) (*bot.Bot, error)
 	Update(bot *bot.Bot) (*bot.Bot, error)
 	Delete(id int64) error
-	UpdateAll(bots []bot.Bot) []error
+	UpdateAll(bots []*bot.Bot) []error
 	Stop(id int64) error
 	Start(id int64) error
 	ClosePosition(id int64) error
