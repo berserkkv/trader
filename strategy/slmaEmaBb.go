@@ -1,6 +1,7 @@
 package strategy
 
 import (
+	"fmt"
 	"github.com/berserkkv/trader/model"
 	"github.com/berserkkv/trader/model/enum/order"
 	"github.com/berserkkv/trader/model/enum/state"
@@ -30,6 +31,14 @@ func (s *SlmaEmaBb) Start(candles []model.Candle) (order.Command, string) {
 	ema := emaSlice[len(emaSlice)-1]
 	price := candles[len(candles)-1].Close
 
+	if s.slmaEma == "" {
+		if slma < ema {
+			s.slmaEma = state.CrossDown
+		} else {
+			s.slmaEma = state.CrossUp
+		}
+	}
+
 	if s.slmaEma == state.CrossUp && slma <= ema {
 		s.slmaEma = state.CrossDown
 		s.bb = state.Neutral
@@ -56,7 +65,7 @@ func (s *SlmaEmaBb) Start(candles []model.Candle) (order.Command, string) {
 
 	if s.slmaEma == state.CrossDown && bb > 90 {
 		s.bb = state.Above90
-		return order.WAIT, "BB above"
+		return order.WAIT, "BB above 90"
 	}
 
 	if s.slmaEma == state.CrossUp && s.bb == state.Under10 && bb > 10 && price > ema {
@@ -71,5 +80,9 @@ func (s *SlmaEmaBb) Start(candles []model.Candle) (order.Command, string) {
 		return order.SHORT, "Short"
 	}
 
-	return order.WAIT, ""
+	return order.WAIT, s.String()
+}
+
+func (s *SlmaEmaBb) String() string {
+	return fmt.Sprintf("SlmaEma: %s, BB: %s", s.slmaEma, s.bb)
 }

@@ -93,7 +93,7 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 		slog.Error("No connector found")
 		return
 	}
-	candles := b.Connector.GetCandles(b.Symbol, b.Timeframe, 50)
+	candles := b.Connector.GetCandles(b.Symbol, b.Timeframe, 202)
 
 	slog.Debug("Fetched klines from API", "length", len(candles))
 
