@@ -30,57 +30,35 @@ func (s *SlmaEmaBb) Start(candles []model.Candle) (order.Command, string) {
 	bb := bbSlice[len(bbSlice)-1]
 	ema := emaSlice[len(emaSlice)-1]
 	price := candles[len(candles)-1].Close
+	bbUpperBorder := 0.9
+	bbLowerBorder := 0.1
 
-	if s.slmaEma == "" {
-		if slma < ema {
-			s.slmaEma = state.CrossDown
-		} else {
-			s.slmaEma = state.CrossUp
-		}
-	}
+	info := fmt.Sprintf("SLMA: %.2f, EMA: %.2f, BB: %.2f, Price: %.2f",
+		slma, ema, bb, price)
 
-	if s.slmaEma == state.CrossUp && slma <= ema {
+	if slma < ema {
 		s.slmaEma = state.CrossDown
-		s.bb = state.Neutral
-		if bb < 10 {
-			s.bb = state.Under10
-		}
-		return order.WAIT, "SlmaEma crossed down"
-	}
-
-	if s.slmaEma == state.CrossDown && slma >= ema {
+	} else {
 		s.slmaEma = state.CrossUp
-		s.bb = state.Neutral
-		if bb > 90 {
-			s.bb = state.Above90
-		}
-
-		return order.WAIT, "SlmaEma crossed up"
 	}
 
-	if s.slmaEma == state.CrossUp && bb < 10 {
+	if bb < bbLowerBorder {
 		s.bb = state.Under10
-		return order.WAIT, "BB under 10"
-	}
-
-	if s.slmaEma == state.CrossDown && bb > 90 {
+	} else if bb > bbUpperBorder {
 		s.bb = state.Above90
-		return order.WAIT, "BB above 90"
 	}
 
-	if s.slmaEma == state.CrossUp && s.bb == state.Under10 && bb > 10 && price > ema {
+	if s.slmaEma == state.CrossUp && s.bb == state.Under10 && bb > bbLowerBorder && price > ema {
 		s.bb = state.Neutral
 		s.slmaEma = state.Neutral
-		return order.LONG, "Long"
-	}
-
-	if s.slmaEma == state.CrossDown && s.bb == state.Above90 && bb < 90 && price < ema {
+		return order.LONG, "Long " + info + s.String()
+	} else if s.slmaEma == state.CrossDown && s.bb == state.Above90 && bb < bbUpperBorder && price < ema {
 		s.bb = state.Neutral
 		s.slmaEma = state.Neutral
-		return order.SHORT, "Short"
+		return order.SHORT, "Short " + info + s.String()
 	}
 
-	return order.WAIT, s.String()
+	return order.WAIT, "Wait " + info + s.String()
 }
 
 func (s *SlmaEmaBb) String() string {

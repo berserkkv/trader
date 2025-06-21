@@ -41,7 +41,7 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 		//strategy.Random{},
 		//strategy.Supertrend{},
 		//strategy.Supertrend2{},
-		&strategy.HaSlma{},
+		//&strategy.HaSlma{},
 		//&strategy.TripleCandle{},
 		//&strategy.SlmaBb{},
 		//&strategy.TripleCandleSlma{},
