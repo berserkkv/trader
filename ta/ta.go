@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-func BollingerPercentB(candles []model.Candle, period int) []float64 {
+func BollingerPercentBSlice(candles []model.Candle, period int) []float64 {
 	n := len(candles)
 	result := make([]float64, n)
 
@@ -32,7 +32,38 @@ func BollingerPercentB(candles []model.Candle, period int) []float64 {
 	return result
 }
 
-func EMA(candles []model.Candle, period int) []float64 {
+// BollingerPercentBLast calculates the most recent Bollinger %B value.
+func BollingerPercentB(candles []model.Candle, period int) float64 {
+	n := len(candles)
+	if n < period || period <= 0 {
+		return math.NaN()
+	}
+
+	// Use last 'period' candles
+	start := n - period
+	var sum float64
+	for i := start; i < n; i++ {
+		sum += candles[i].Close
+	}
+	sma := sum / float64(period)
+
+	var variance float64
+	for i := start; i < n; i++ {
+		diff := candles[i].Close - sma
+		variance += diff * diff
+	}
+	stddev := math.Sqrt(variance / float64(period))
+
+	upper := sma + 2*stddev
+	lower := sma - 2*stddev
+
+	latestClose := candles[n-1].Close
+	percentB := (latestClose - lower) / (upper - lower)
+
+	return percentB
+}
+
+func EMASlice(candles []model.Candle, period int) []float64 {
 	n := len(candles)
 	result := make([]float64, n)
 
@@ -42,7 +73,7 @@ func EMA(candles []model.Candle, period int) []float64 {
 
 	k := 2.0 / float64(period+1) // smoothing factor
 
-	// Start by calculating the SMA for the first 'period' candles as initial EMA
+	// Run by calculating the SMA for the first 'period' candles as initial EMA
 	var sum float64
 	for i := 0; i < period && i < n; i++ {
 		sum += candles[i].Close
@@ -64,6 +95,30 @@ func EMA(candles []model.Candle, period int) []float64 {
 	}
 
 	return result
+}
+
+// EMALast calculates the Exponential Moving Average (EMA) for the last candle
+func EMA(candles []model.Candle, period int) float64 {
+	n := len(candles)
+	if n < period || period <= 0 {
+		return math.NaN()
+	}
+
+	k := 2.0 / float64(period+1) // smoothing factor
+
+	// Calculate initial SMA for the first EMA value
+	var sum float64
+	for i := 0; i < period; i++ {
+		sum += candles[i].Close
+	}
+	ema := sum / float64(period)
+
+	// Apply EMA formula for remaining candles
+	for i := period; i < n; i++ {
+		ema = (candles[i].Close-ema)*k + ema
+	}
+
+	return ema
 }
 
 func DetectHeikinAshiColorChange(has []model.HeikinAshi) (changed bool, lastColor string) {
@@ -148,7 +203,7 @@ func Supertrend(candles []model.Candle, atrPeriod int, factor float64) ([]float6
 }
 
 // CalculateSLMA calculates the Smoothed Linear Moving Average over a slice of float64
-func SLMA(prices []float64, period int) []float64 {
+func SLMASlice(prices []float64, period int) []float64 {
 	if len(prices) < period {
 		return nil
 	}
@@ -166,6 +221,24 @@ func SLMA(prices []float64, period int) []float64 {
 	}
 
 	return slma
+}
+
+// SLMALast calculates the Smoothed Linear Moving Average (SLMA) for the last 'period' prices.
+func SLMA(prices []float64, period int) float64 {
+	if len(prices) < period {
+		return 0
+	}
+
+	weightSum := period * (period + 1) / 2
+	var weightedSum float64
+
+	start := len(prices) - period
+	for i := 0; i < period; i++ {
+		weight := i + 1
+		weightedSum += prices[start+i] * float64(weight)
+	}
+
+	return weightedSum / float64(weightSum)
 }
 
 func CandleColor(c model.Candle) int {

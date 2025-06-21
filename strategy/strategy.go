@@ -3,12 +3,13 @@ package strategy
 import (
 	"github.com/berserkkv/trader/model"
 	"github.com/berserkkv/trader/model/enum/order"
+	strategyImpl "github.com/berserkkv/trader/strategy/impl"
 	"log/slog"
 )
 
 type Strategy interface {
 	Name() string
-	Start(candles []model.Candle) (order.Command, string)
+	Run(candles []model.Candle) (order.Command, string)
 }
 
 func GetStrategy(name string) Strategy {
@@ -43,6 +44,8 @@ func GetStrategy(name string) Strategy {
 		return &TripleCandleSlma{}
 	case "SlmaEmaBb":
 		return &SlmaEmaBb{}
+	case "SlmaEmaBb2":
+		return &strategyImpl.SlmaEmaBb2{}
 	default:
 		slog.Error("Strategy not found", "name", name)
 		return nil

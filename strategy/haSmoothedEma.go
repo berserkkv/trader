@@ -17,18 +17,18 @@ func (s HASmoothedEMAStrategy) Name() string {
 // Enters SHORT on bearish color change if price is below EMA-40.
 // Otherwise, waits — filters trades using trend confirmation.
 
-func (s HASmoothedEMAStrategy) Start(candles []model.Candle) (order.Command, string) {
+func (s HASmoothedEMAStrategy) Run(candles []model.Candle) (order.Command, string) {
 	ema40 := ta.EMA(candles, 40)
 
 	ha := ta.CalculateSmoothedHeikinAshi(candles, 3)
 
 	changed, color := ta.DetectHeikinAshiColorChange(ha)
 
-	slog.Debug(s.Name(), "changed", changed, "color", color, "ema", ema40[len(ema40)-1], "price", candles[len(candles)-1].Close)
+	slog.Debug(s.Name(), "changed", changed, "color", color, "ema", ema40, "price", candles[len(candles)-1].Close)
 	if changed {
-		if color == "green" && candles[len(candles)-1].Close > ema40[len(ema40)-1] {
+		if color == "green" && candles[len(candles)-1].Close > ema40 {
 			return order.LONG, ""
-		} else if color == "red" && candles[len(candles)-1].Close < ema40[len(ema40)-1] {
+		} else if color == "red" && candles[len(candles)-1].Close < ema40 {
 			return order.SHORT, ""
 		}
 	}

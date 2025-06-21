@@ -14,7 +14,7 @@ func (s HASmoothedStrategy) Name() string {
 	return "HASmoothed"
 }
 
-func (s HASmoothedStrategy) Start(candles []model.Candle) (order.Command, string) {
+func (s HASmoothedStrategy) Run(candles []model.Candle) (order.Command, string) {
 	ha := ta.CalculateSmoothedHeikinAshi(candles, 3)
 
 	changed, color := ta.DetectHeikinAshiColorChange(ha)

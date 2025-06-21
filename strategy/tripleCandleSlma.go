@@ -13,7 +13,7 @@ func (*TripleCandleSlma) Name() string {
 	return "3CanSlma"
 }
 
-func (s *TripleCandleSlma) Start(candles []model.Candle) (order.Command, string) {
+func (s *TripleCandleSlma) Run(candles []model.Candle) (order.Command, string) {
 	if len(candles) < 3 {
 		return order.WAIT, "Not enough candles"
 	}
@@ -27,14 +27,13 @@ func (s *TripleCandleSlma) Start(candles []model.Candle) (order.Command, string)
 	}
 	slma := ta.SLMA(closePrices, 20)
 
-	lastSlma := slma[len(slma)-1]
 	lastPrice := candles[len(candles)-2].Close
 
-	info := fmt.Sprintf("price=%.2f, slma=%.2f", lastPrice, lastSlma)
+	info := fmt.Sprintf("price=%.2f, slma=%.2f", lastPrice, slma)
 
-	if cur == 1 && prev == 1 && prev2 == 1 && lastSlma < lastPrice {
+	if cur == 1 && prev == 1 && prev2 == 1 && slma < lastPrice {
 		return order.LONG, "LONG all 3 green " + info
-	} else if cur == -1 && prev == -1 && prev2 == -1 && lastSlma > lastPrice {
+	} else if cur == -1 && prev == -1 && prev2 == -1 && slma > lastPrice {
 		return order.SHORT, "SHORT all 3 red " + info
 	}
 

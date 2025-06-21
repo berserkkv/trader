@@ -104,7 +104,7 @@ func (b *Bot) OpenPosition(command order.Command) error {
 	capital := b.CurrentCapital
 	b.CurrentCapital -= capital
 
-	fee := calculator.CalculateMakerFee(capital)
+	fee := calculator.CalculateTakerFee(capital)
 
 	capital -= fee
 
@@ -120,6 +120,7 @@ func (b *Bot) OpenPosition(command order.Command) error {
 	b.OrderFee = fee
 
 	slog.Info("Position opened",
+		"cpt", fmt.Sprintf("%.2f", b.OrderCapital),
 		"name", b.Name,
 		"OrderType", b.OrderType,
 		"entryPrice", b.OrderEntryPrice,
@@ -299,5 +300,5 @@ func (b *Bot) CanOpenPosition() error {
 }
 
 func (b *Bot) String() string {
-	return fmt.Sprintf("{Name: %s, InPos: %t, Capital: %.2f}", b.Name, b.InPos, b.CurrentCapital)
+	return fmt.Sprintf("{Name: %s, InPos: %t, Capital: %.2f, PnL: %d/%d}", b.Name, b.InPos, b.CurrentCapital, b.TotalWins, b.TotalLosses)
 }

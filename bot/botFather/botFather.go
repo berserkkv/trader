@@ -102,7 +102,7 @@ func (bf *BotFather) runStrategy(b *bot.Bot) {
 		return
 	}
 
-	cmd, info := b.Strategy.Start(candles)
+	cmd, info := b.Strategy.Run(candles)
 
 	slog.Info("Scanned", "command", cmd, "bot", b)
 

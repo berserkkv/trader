@@ -14,8 +14,8 @@ func (BBHA3) Name() string {
 	return "BBHA3"
 }
 
-func (s BBHA3) Start(candles []model.Candle) (order.Command, string) {
-	bb20 := ta.BollingerPercentB(candles, 20)
+func (s BBHA3) Run(candles []model.Candle) (order.Command, string) {
+	bb20 := ta.BollingerPercentBSlice(candles, 20)
 	ha := ta.CalculateHeikinAshi(candles)
 	changed, color := ta.DetectHeikinAshiColorChange(ha)
 

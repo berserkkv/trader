@@ -36,7 +36,7 @@ func TestHA_SLMAStrategy_LongSignal(t *testing.T) {
 	strat := &HaSlma{}
 
 	// First call: should detect HA color change
-	cmd, info := strat.Start(candles)
+	cmd, info := strat.Run(candles)
 	fmt.Println("CALL 1:", cmd, info)
 
 	if cmd != order.LONG {

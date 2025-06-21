@@ -8,6 +8,7 @@ import (
 	"github.com/berserkkv/trader/pairBot/pairBotFather"
 	"github.com/berserkkv/trader/router"
 	"github.com/berserkkv/trader/service/pairBotService"
+	strategyImpl "github.com/berserkkv/trader/strategy/impl"
 
 	"github.com/berserkkv/trader/model/enum/symbol"
 	"github.com/berserkkv/trader/model/enum/timeframe"
@@ -46,6 +47,7 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 		//&strategy.SlmaBb{},
 		//&strategy.TripleCandleSlma{},
 		&strategy.SlmaEmaBb{},
+		&strategyImpl.SlmaEmaBb2{},
 	}
 
 	tfs := []timeframe.Timeframe{

@@ -15,7 +15,7 @@ func (Random) Name() string {
 	return "RANDOM"
 }
 
-func (Random) Start(candles []model.Candle) (order.Command, string) {
+func (Random) Run(candles []model.Candle) (order.Command, string) {
 
 	r := rnd.Intn(3)
 

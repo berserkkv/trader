@@ -16,7 +16,7 @@ func (s *SlmaBb) Name() string {
 	return "SlmaBb"
 }
 
-func (s *SlmaBb) Start(candles []model.Candle) (order.Command, string) {
+func (s *SlmaBb) Run(candles []model.Candle) (order.Command, string) {
 	if len(candles) < 20 {
 		return order.WAIT, "Not enough candles"
 	}
@@ -29,31 +29,29 @@ func (s *SlmaBb) Start(candles []model.Candle) (order.Command, string) {
 	}
 	slma := ta.SLMA(closePrices, 20)
 
-	lastBB20 := bb20[len(bb20)-1]
-	lastSLMA20 := slma[len(slma)-1]
 	lastClosePrice := candles[len(candles)-1].Close
 
-	info := fmt.Sprintf("price=%.2f, bb20=%.2f, slma=%.2f", lastClosePrice, lastBB20, lastSLMA20)
+	info := fmt.Sprintf("price=%.2f, bb20=%.2f, slma=%.2f", lastClosePrice, bb20, slma)
 
-	if lastBB20 > 0.9 {
+	if bb20 > 0.9 {
 		s.bbState = state.Above90
 		info += fmt.Sprintf(" bbState=%s", s.bbState)
 		return order.WAIT, "Wait " + info
 	}
 
-	if lastBB20 < 0.1 {
+	if bb20 < 0.1 {
 		s.bbState = state.Under10
 		info += fmt.Sprintf(" bbState=%s", s.bbState)
 		return order.WAIT, "Wait " + info
 	}
 
-	if s.bbState == state.Above90 && lastSLMA20 > lastClosePrice {
+	if s.bbState == state.Above90 && slma > lastClosePrice {
 		s.bbState = state.Neutral
 		info += fmt.Sprintf(" bbState=%s", s.bbState)
 		return order.SHORT, "SHORT " + info
 	}
 
-	if s.bbState == state.Under10 && lastSLMA20 < lastClosePrice {
+	if s.bbState == state.Under10 && slma < lastClosePrice {
 		s.bbState = state.Neutral
 		info += fmt.Sprintf(" bbState=%s", s.bbState)
 		return order.LONG, "LONG " + info

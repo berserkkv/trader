@@ -13,7 +13,7 @@ func (Supertrend2) Name() string {
 	return "S2"
 }
 
-func (Supertrend2) Start(candles []model.Candle) (order.Command, string) {
+func (Supertrend2) Run(candles []model.Candle) (order.Command, string) {
 	n := len(candles) - 1
 	if n <= 0 {
 		return order.WAIT, "not enough candles"

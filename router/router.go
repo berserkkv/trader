@@ -73,15 +73,6 @@ func Register(botController controller.BotController, orderController controller
 			orderController.GetStatisticsByBotID(&ctxImpl.GinContext{C: c})
 		})
 	}
-	//orders := r.Group("/api/orders")
-	//{
-	//	orders.GET("", GetOrders)
-	//	orders.POST("", CreateOrder)
-	//	orders.PUT("", UpdateOrder)
-	//	orders.GET("/by-bot", GetOrdersByBotId)
-	//	orders.GET("/statistics", GetOrderStatistics)
-	//
-	//}
 
 	pairBots := r.Group("/api/pair_bots")
 	{

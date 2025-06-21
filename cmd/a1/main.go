@@ -1,68 +1,74 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"math"
-	"net/http"
+	"context"
+	"encoding/csv"
+	"log"
+	"os"
+	"time"
+
+	binance "github.com/adshao/go-binance/v2"
 )
 
-type KlineData [][]interface{}
-
-func fetchKlines(symbol string, interval string, limit int) ([]float64, error) {
-	url := fmt.Sprintf("https://api.binance.com/api/v3/klines?symbol=%s&interval=%s&limit=%d", symbol, interval, limit)
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	var rawData KlineData
-	if err := json.Unmarshal(body, &rawData); err != nil {
-		return nil, err
-	}
-
-	var closes []float64
-	for _, k := range rawData {
-		price := k[4].(string) // close price
-		var f float64
-		fmt.Sscanf(price, "%f", &f)
-		closes = append(closes, f)
-	}
-	return closes, nil
-}
-
-func calculateZScore(spread []float64) float64 {
-	n := float64(len(spread))
-	var sum, mean, stddev float64
-
-	for _, v := range spread {
-		sum += v
-	}
-	mean = sum / n
-
-	for _, v := range spread {
-		stddev += math.Pow(v-mean, 2)
-	}
-	stddev = math.Sqrt(stddev / n)
-
-	latest := spread[len(spread)-1]
-	return (latest - mean) / stddev
-}
-
 func main() {
-	pricesA, _ := fetchKlines("ETHUSDT", "1h", 100)
-	pricesB, _ := fetchKlines("BTCUSDT", "1h", 100)
+	client := binance.NewClient("", "") // no API key needed for public data
 
-	var spread []float64
-	for i := range pricesA {
-		spread = append(spread, math.Log(pricesA[i])-math.Log(pricesB[i]))
+	symbol := "XRPUSDT"
+	interval := "1h"
+	limit := 1000 // max per request
+
+	// Set start date (Binance listing date for SOL)
+	startTime := time.Date(2020, 8, 11, 0, 0, 0, 0, time.UTC).UnixMilli()
+	endTime := time.Now().UnixMilli()
+
+	start := time.UnixMilli(startTime).Format("2006.01.02")
+	end := time.UnixMilli(endTime).Format("2006.01.02")
+	// Create file
+	file, err := os.Create(symbol + "_" + interval + "_" + start + "_" + end + ".csv")
+	if err != nil {
+		log.Fatal("Error creating file:", err)
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	writer.Write([]string{"Time", "Open", "High", "Low", "Close", "Volume"})
+
+	for startTime < endTime {
+		klines, err := client.NewKlinesService().
+			Symbol(symbol).
+			Interval(interval).
+			Limit(limit).
+			StartTime(startTime).
+			Do(context.Background())
+
+		if err != nil {
+			log.Fatalf("Error fetching data: %v", err)
+		}
+
+		if len(klines) == 0 {
+			break
+		}
+
+		for _, k := range klines {
+			writer.Write([]string{
+				time.UnixMilli(k.OpenTime).Format(time.RFC3339),
+				k.Open,
+				k.High,
+				k.Low,
+				k.Close,
+				k.Volume,
+			})
+		}
+
+		// Move start time forward to next candle
+		startTime = klines[len(klines)-1].OpenTime + 1
+		log.Printf("Fetched up to: %s", time.UnixMilli(startTime).Format(time.RFC3339))
+
+		// Sleep to avoid hitting API rate limits
+		time.Sleep(500 * time.Millisecond)
 	}
 
-	z := calculateZScore(spread)
-	fmt.Printf("Current Spread Z-Score: %.2f\n", z)
+	log.Println("Download complete! Data saved to solusdt_all.csv")
 }

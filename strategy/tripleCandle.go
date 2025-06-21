@@ -13,7 +13,7 @@ func (TripleCandle) Name() string {
 	return "3Can"
 }
 
-func (s TripleCandle) Start(candles []model.Candle) (order.Command, string) {
+func (s TripleCandle) Run(candles []model.Candle) (order.Command, string) {
 	if len(candles) < 3 {
 		return order.WAIT, "Not enough candles"
 	}
