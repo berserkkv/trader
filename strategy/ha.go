@@ -15,7 +15,7 @@ func (s HAStrategy) Name() string {
 }
 
 func (s HAStrategy) Run(candles []model.Candle) (order.Command, string) {
-	ha := ta.CalculateHeikinAshi(candles)
+	ha := ta.HeikinAshi(candles)
 
 	changed, color := ta.DetectHeikinAshiColorChange(ha)
 

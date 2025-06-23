@@ -17,7 +17,7 @@ func (s BBHAStrategy) Name() string {
 func (s BBHAStrategy) Run(candles []model.Candle) (order.Command, string) {
 
 	bb20 := ta.BollingerPercentBSlice(candles, 20)
-	ha := ta.CalculateHeikinAshi(candles)
+	ha := ta.HeikinAshi(candles)
 	changed, lastColor := ta.DetectHeikinAshiColorChange(ha)
 
 	// BB %B crosses above 0.3 (from ≤0.3 to >0.3)

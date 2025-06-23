@@ -16,7 +16,7 @@ func (s BBHA2Strategy) Name() string {
 
 func (s BBHA2Strategy) Run(candles []model.Candle) (order.Command, string) {
 	bb20 := ta.BollingerPercentBSlice(candles, 20)
-	ha := ta.CalculateHeikinAshi(candles)
+	ha := ta.HeikinAshi(candles)
 	changed, lastColor := ta.DetectHeikinAshiColorChange(ha)
 
 	info := fmt.Sprintf("bb=%.4f, HAColor=%s, HAChanged=%t",

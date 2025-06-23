@@ -7,21 +7,43 @@ import (
 	"github.com/berserkkv/trader/model/enum/symbol"
 	"github.com/berserkkv/trader/model/enum/timeframe"
 	"github.com/berserkkv/trader/strategy"
+	strategyImpl "github.com/berserkkv/trader/strategy/impl"
 	logger "github.com/berserkkv/trader/tools/log"
 )
 
 func main() {
 	logger.Init("info", "local")
+	strategies := []strategy.Strategy{
+		strategy.HAStrategy{},
+		strategy.HASmoothedStrategy{},
+		strategy.HAEMAStrategy{},
+		strategy.BBHAStrategy{},
+		strategy.BBHA2Strategy{},
+		strategy.BBHA3{},
+		strategy.HASmoothedEMAStrategy{},
+		strategy.Random{},
+		strategy.Supertrend{},
+		strategy.Supertrend2{},
+		&strategy.HaSlma{},
+		&strategy.TripleCandle{},
+		&strategy.SlmaBb{},
+		&strategy.TripleCandleSlma{},
+		&strategy.SlmaEmaBb{},
+		&strategyImpl.SlmaEmaBb2{},
+		&strategyImpl.BbHaSlma{},
+		&strategyImpl.Macd{},
+		&strategyImpl.EmaMacd{},
+	}
 
 	capital := 100.0
-	leverage := 10.0
-	takeProfit := 1.0
-	stopLoss := 0.3
-	st := &strategy.HAStrategy{}
-	tf := timeframe.HOUR_1
-	smb := symbol.BTCUSDT
+	leverage := 15.0
+	takeProfit := 0.7
+	stopLoss := 0.2
+	st := strategies[18]
+	tf := timeframe.MINUTE_5
+	smb := symbol.SOLUSDT
 
-	bf := backtest.NewBacktestBotFather(200)
+	bf := backtest.NewBacktestBotFather(202)
 	b := bot.NewBot(tf, st, smb, capital, leverage, takeProfit, stopLoss)
 
 	bf.LoadData(getName(b))
@@ -31,8 +53,18 @@ func main() {
 
 	bf.Run(b)
 
-	fmt.Println(b.String())
-	fmt.Println((bf.Index - startIndex) / 24)
+	length := bf.Index - startIndex
+	days := 0
+	switch b.Timeframe {
+	case timeframe.HOUR_1:
+		days = length / 24
+	case timeframe.MINUTE_15:
+		days = length / 96
+	case timeframe.MINUTE_5:
+		days = length / 288
+	}
+	info := fmt.Sprintf("Name: %s, Capital: %.2f, Pnl: %d/%d, Days: %d\n", b.Name, b.CurrentCapital+b.OrderCapital, b.TotalWins, b.TotalLosses, days)
+	bf.PrintChart(bf.Capital, info)
 
 }
 

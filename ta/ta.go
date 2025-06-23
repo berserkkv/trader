@@ -63,8 +63,8 @@ func BollingerPercentB(candles []model.Candle, period int) float64 {
 	return percentB
 }
 
-func EMASlice(candles []model.Candle, period int) []float64 {
-	n := len(candles)
+func EMASlice(prices []float64, period int) []float64 {
+	n := len(prices)
 	result := make([]float64, n)
 
 	if n == 0 || period <= 0 {
@@ -73,32 +73,31 @@ func EMASlice(candles []model.Candle, period int) []float64 {
 
 	k := 2.0 / float64(period+1) // smoothing factor
 
-	// Run by calculating the SMA for the first 'period' candles as initial EMA
+	// Run by calculating the SMA for the first 'period' prices as initial EMA
 	var sum float64
 	for i := 0; i < period && i < n; i++ {
-		sum += candles[i].Close
+		sum += prices[i]
 	}
 	initialEMA := sum / float64(period)
 	result[period-1] = initialEMA
 
-	// Calculate EMA for remaining candles
+	// Calculate EMA for remaining prices
 	for i := period; i < n; i++ {
 		prevEMA := result[i-1]
-		close := candles[i].Close
-		ema := (close-prevEMA)*k + prevEMA
+		ema := (prices[i]-prevEMA)*k + prevEMA
 		result[i] = ema
 	}
 
 	// Optional: set NaN for values before period
-	for i := 0; i < period-1; i++ {
-		result[i] = math.NaN()
-	}
+	//for i := 0; i < period-1; i++ {
+	//	result[i] = math.NaN()
+	//}
 
 	return result
 }
 
 // EMALast calculates the Exponential Moving Average (EMA) for the last candle
-func EMA(candles []model.Candle, period int) float64 {
+func EMA(candles []float64, period int) float64 {
 	n := len(candles)
 	if n < period || period <= 0 {
 		return math.NaN()
@@ -109,13 +108,13 @@ func EMA(candles []model.Candle, period int) float64 {
 	// Calculate initial SMA for the first EMA value
 	var sum float64
 	for i := 0; i < period; i++ {
-		sum += candles[i].Close
+		sum += candles[i]
 	}
 	ema := sum / float64(period)
 
 	// Apply EMA formula for remaining candles
 	for i := period; i < n; i++ {
-		ema = (candles[i].Close-ema)*k + ema
+		ema = (candles[i]-ema)*k + ema
 	}
 
 	return ema
@@ -202,7 +201,7 @@ func Supertrend(candles []model.Candle, atrPeriod int, factor float64) ([]float6
 	return supertrend, direction
 }
 
-// CalculateSLMA calculates the Smoothed Linear Moving Average over a slice of float64
+// SLMASlice CalculateSLMA calculates the Smoothed Linear Moving Average over a slice of float64
 func SLMASlice(prices []float64, period int) []float64 {
 	if len(prices) < period {
 		return nil
@@ -223,7 +222,7 @@ func SLMASlice(prices []float64, period int) []float64 {
 	return slma
 }
 
-// SLMALast calculates the Smoothed Linear Moving Average (SLMA) for the last 'period' prices.
+// SLMA SLMALast calculates the Smoothed Linear Moving Average (SLMA) for the last 'period' prices.
 func SLMA(prices []float64, period int) float64 {
 	if len(prices) < period {
 		return 0
@@ -248,4 +247,65 @@ func CandleColor(c model.Candle) int {
 		return -1
 	}
 	return 0
+}
+
+// MACD returns macd line, signal line, histogram
+func MACDSlice(prices []float64) ([]float64, []float64, []float64) {
+	const fastPeriod = 12
+	const slowPeriod = 25
+	const signalPeriod = 9
+
+	fastEma := EMASlice(prices, fastPeriod)
+	slowEma := EMASlice(prices, slowPeriod)
+
+	n := len(prices)
+
+	macdLine := make([]float64, n)
+	for i := 0; i < n; i++ {
+		if fastEma[i] == math.NaN() || slowEma[i] == math.NaN() {
+			macdLine[i] = 0
+		} else {
+			macdLine[i] = fastEma[i] - slowEma[i]
+		}
+	}
+
+	signalLine := EMASlice(macdLine, signalPeriod)
+
+	histogram := make([]float64, n)
+
+	for i := 0; i < n; i++ {
+		histogram[i] = macdLine[i] - signalLine[i]
+	}
+
+	return macdLine, signalLine, histogram
+}
+
+func MACD(prices []float64) (float64, float64, float64) {
+	const fastPeriod = 12
+	const slowPeriod = 25
+	const signalPeriod = 9
+
+	fastEma := EMASlice(prices, fastPeriod)
+	slowEma := EMASlice(prices, slowPeriod)
+
+	n := len(prices)
+
+	macdLine := make([]float64, n)
+	for i := 0; i < n; i++ {
+		if fastEma[i] == math.NaN() || slowEma[i] == math.NaN() {
+			macdLine[i] = 0
+		} else {
+			macdLine[i] = fastEma[i] - slowEma[i]
+		}
+	}
+
+	signalLine := EMASlice(macdLine, signalPeriod)
+
+	histogram := make([]float64, n)
+
+	for i := 0; i < n; i++ {
+		histogram[i] = macdLine[i] - signalLine[i]
+	}
+
+	return macdLine[len(macdLine)-1], signalLine[len(signalLine)-1], histogram[len(histogram)-1]
 }

@@ -24,7 +24,7 @@ func (s *HaSlma) Run(candles []model.Candle) (order.Command, string) {
 	}
 	slma20 := ta.SLMA(closePrice, 20)
 
-	ha := ta.CalculateHeikinAshi(candles[:len(candles)-1])
+	ha := ta.HeikinAshi(candles[:len(candles)-1])
 
 	changed, color := ta.DetectHeikinAshiColorChange(ha)
 

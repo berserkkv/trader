@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-func CalculateHeikinAshi(candles []model.Candle) []model.HeikinAshi {
+func HeikinAshi(candles []model.Candle) []model.HeikinAshi {
 	n := len(candles)
 	result := make([]model.HeikinAshi, n)
 

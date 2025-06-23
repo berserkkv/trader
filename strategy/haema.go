@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/berserkkv/trader/model"
 	"github.com/berserkkv/trader/model/enum/order"
+	"github.com/berserkkv/trader/service/tools"
 	"github.com/berserkkv/trader/ta"
 	"log/slog"
 )
@@ -19,9 +20,9 @@ func (s HAEMAStrategy) Name() string {
 // Otherwise, waits — filters trades using trend confirmation.
 
 func (s HAEMAStrategy) Run(candles []model.Candle) (order.Command, string) {
-	ema40 := ta.EMA(candles, 40)
+	ema40 := ta.EMA(tools.GetClosePrices(candles), 40)
 
-	ha := ta.CalculateHeikinAshi(candles)
+	ha := ta.HeikinAshi(candles)
 
 	changed, color := ta.DetectHeikinAshiColorChange(ha)
 

@@ -16,7 +16,7 @@ func (BBHA3) Name() string {
 
 func (s BBHA3) Run(candles []model.Candle) (order.Command, string) {
 	bb20 := ta.BollingerPercentBSlice(candles, 20)
-	ha := ta.CalculateHeikinAshi(candles)
+	ha := ta.HeikinAshi(candles)
 	changed, color := ta.DetectHeikinAshiColorChange(ha)
 
 	slog.Debug(s.Name(), "bb", bb20[len(bb20)-1], "bb-2", bb20[len(bb20)-2], "HeikinAshi", color, "HA changed", changed)

@@ -8,4 +8,7 @@ const (
 	CrossUp   State = "CROSS_UP"
 	CrossDown State = "CROSS_DOWN"
 	Neutral   State = "NEUTRAL"
+	Under0    State = "UNDER0"
+	Above100  State = "ABOVE_100"
+	Above1    State = "ABOVE_1"
 )

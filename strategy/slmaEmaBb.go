@@ -20,7 +20,7 @@ func (*SlmaEmaBb) Name() string {
 func (s *SlmaEmaBb) Run(candles []model.Candle) (order.Command, string) {
 	slma := ta.SLMA(tools.GetClosePrices(candles), 20)
 	bb := ta.BollingerPercentB(candles, 20)
-	ema := ta.EMA(candles, 200)
+	ema := ta.EMA(tools.GetClosePrices(candles), 200)
 
 	price := candles[len(candles)-1].Close
 	bbUpperBorder := 0.9

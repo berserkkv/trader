@@ -132,6 +132,47 @@ func (b *Bot) OpenPosition(command order.Command) error {
 	return nil
 }
 
+func (b *Bot) BacktestOpenPosition(command order.Command, price float64) error {
+	if err := b.CanOpenPosition(); err != nil {
+		return err
+	}
+	b.OrderType = command
+
+	b.OrderStopLoss = calculator.CalculateStopLoss(price, b.StopLoss, b.OrderType)
+	b.OrderTakeProfit = calculator.CalculateTakeProfit(price, b.TakeProfit, b.OrderType)
+
+	//capital := (b.CurrentCapital * 25) / 100
+	capital := b.CurrentCapital
+	b.CurrentCapital -= capital
+
+	fee := calculator.CalculateTakerFee(capital)
+
+	capital -= fee
+
+	b.OrderCapitalWithLeverage = b.Leverage * capital
+
+	now := time.Now()
+	b.OrderQuantity = calculator.CalculateBuyQuantity(price, b.OrderCapitalWithLeverage)
+	b.OrderEntryPrice = price
+	b.OrderCapital = capital
+	b.InPos = true
+	b.OrderCreatedTime = now
+	b.OrderScannedTime = now
+	b.OrderFee = fee
+
+	slog.Info("Position opened",
+		"cpt", fmt.Sprintf("%.2f", b.OrderCapital),
+		"name", b.Name,
+		"OrderType", b.OrderType,
+		"entryPrice", b.OrderEntryPrice,
+		"stopLoss", b.OrderStopLoss,
+		"takeProfit", b.OrderTakeProfit,
+		"asset", b.OrderQuantity,
+	)
+
+	return nil
+}
+
 func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 	var pnl float64
 	var pnlPercent float64

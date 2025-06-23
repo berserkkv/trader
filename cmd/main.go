@@ -46,8 +46,10 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 		//&strategy.TripleCandle{},
 		//&strategy.SlmaBb{},
 		//&strategy.TripleCandleSlma{},
-		&strategy.SlmaEmaBb{},
+		//&strategy.SlmaEmaBb{},
 		&strategyImpl.SlmaEmaBb2{},
+		&strategyImpl.Macd{},
+		&strategyImpl.EmaMacd{},
 	}
 
 	tfs := []timeframe.Timeframe{

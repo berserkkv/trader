@@ -5,6 +5,11 @@ import (
 	"github.com/berserkkv/trader/model"
 	"github.com/berserkkv/trader/model/enum/order"
 	"github.com/berserkkv/trader/service/tools"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
+	"image/color"
+	"log"
 	"log/slog"
 	"math/rand"
 	"time"
@@ -14,6 +19,7 @@ type BacktestBotFather struct {
 	candles []model.Candle
 	length  int
 	Index   int
+	Capital []float64
 }
 
 func NewBacktestBotFather(length int) *BacktestBotFather {
@@ -28,12 +34,13 @@ func (b *BacktestBotFather) Run(bot *bot.Bot) {
 		if len(c) == 0 {
 			break
 		}
-		if bot.CurrentCapital > bot.InitialCapital*10 {
-			slog.Info("Excellent")
-			return
-		}
+		//if bot.CurrentCapital > bot.InitialCapital*10 {
+		//	slog.Info("Excellent")
+		//	return
+		//}
 
 		if bot.InPos {
+
 			if b.stopLossInRange(bot.OrderStopLoss, c[len(c)-1], bot.OrderType) {
 				_, err := bot.ClosePosition(bot.OrderStopLoss)
 				if err != nil {
@@ -47,15 +54,18 @@ func (b *BacktestBotFather) Run(bot *bot.Bot) {
 					slog.Error("Error closing position", "err", err)
 				}
 			}
+
 		} else {
-			if bot.CurrentCapital <= 95 {
-				slog.Info("Bot Stopped", "capital", bot.CurrentCapital)
-				return
-			}
 			command, _ := bot.Strategy.Run(c)
 
 			if command == order.LONG || command == order.SHORT {
-				err := bot.OpenPosition(command)
+
+				if bot.CurrentCapital != 0.0 {
+					b.Capital = append(b.Capital, bot.CurrentCapital)
+				} else {
+					b.Capital = append(b.Capital, bot.OrderCapital)
+				}
+				err := bot.BacktestOpenPosition(command, c[len(c)-1].Close)
 				if err != nil {
 					slog.Error("Error opening position", "error", err)
 					return
@@ -64,6 +74,7 @@ func (b *BacktestBotFather) Run(bot *bot.Bot) {
 		}
 
 	}
+
 }
 
 func (b *BacktestBotFather) LoadData(name string) error {
@@ -116,4 +127,39 @@ func (b *BacktestBotFather) Randomize() {
 
 	b.Index = rand.Intn(len(b.candles))
 	slog.Info("Randomized", "Index", b.Index)
+}
+
+func (b *BacktestBotFather) PrintChart(values []float64, info string) {
+	if len(values) == 0 {
+		slog.Info("Empty values, nothing to print")
+		return
+	}
+	pts := make(plotter.XYs, len(values))
+	for i, v := range values {
+		pts[i].X = float64(i)
+		pts[i].Y = v
+	}
+
+	// Create new plot
+	p := plot.New()
+	p.Title.Text = info
+	p.X.Label.Text = "Index"
+	p.Y.Label.Text = "Value"
+	if values[len(values)-1] < 100 {
+		p.BackgroundColor = color.RGBA{R: 255, G: 10, B: 10, A: 255}
+	}
+
+	line, err := plotter.NewLine(pts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	line.Color = color.RGBA{R: 10, G: 10, B: 10, A: 255}
+
+	//line.FillColor = color.White
+	p.Add(line)
+
+	// Save to PNG
+	if err := p.Save(8*vg.Inch, 4*vg.Inch, "chart.png"); err != nil {
+		log.Fatal(err)
+	}
 }
