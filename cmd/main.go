@@ -28,7 +28,7 @@ func main() {
 func runBothFather(bf *botFather.BotFather, service service.BotService) {
 	capital := 100.0
 	leverage := 10.0
-	takeProfit := 1.0
+	takeProfit := 0.7
 	stopLoss := 0.15
 
 	sts := []strategy.Strategy{
@@ -54,6 +54,7 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 
 	tfs := []timeframe.Timeframe{
 		timeframe.MINUTE_1,
+		timeframe.MINUTE_5,
 		timeframe.MINUTE_15,
 		timeframe.HOUR_1,
 	}
