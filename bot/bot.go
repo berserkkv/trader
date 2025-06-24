@@ -225,7 +225,7 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 func (b *Bot) ShiftStopLoss() {
 	realROE := b.Roe / b.Leverage
 
-	if realROE >= 0.14 {
+	if realROE >= 0.3 {
 		pnlDecimal := realROE / 100.0
 		shift := pnlDecimal / 2.0
 
