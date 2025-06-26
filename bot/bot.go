@@ -37,6 +37,7 @@ type Bot struct {
 	Leverage                 float64             `json:"leverage"`
 	TakeProfit               float64             `json:"takeProfit"`
 	StopLoss                 float64             `json:"stopLoss"`
+	IsTrailingStopActive     bool                `json:"isTrailingStopActive"`
 	InPos                    bool                `gorm:"default:false" json:"inPos"`
 	OrderType                order.Command       `json:"orderType"`
 	OrderCreatedTime         time.Time           `json:"orderCreatedTime"`
@@ -71,71 +72,11 @@ func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symb
 
 }
 
-func NewBot2(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symbol, leverage, takeProfit, stopLoss float64) *Bot {
-	name := st.Name() + "_" + fmt.Sprintf("%.1f", stopLoss)
-
-	return &Bot{
-		Name:           name,
-		Symbol:         smb,
-		Timeframe:      timeframe,
-		StrategyName:   st.Name(),
-		IsNotActive:    true,
-		Strategy:       st,
-		Connector:      connector.BinanceConnector{},
-		InitialCapital: 100,
-		CurrentCapital: 100,
-		Leverage:       leverage,
-		TakeProfit:     takeProfit,
-		StopLoss:       stopLoss,
-	}
-}
-
 func (b *Bot) OpenPosition(command order.Command) error {
 	if err := b.CanOpenPosition(); err != nil {
 		return err
 	}
 	price := b.Connector.GetPrice(b.Symbol)
-	b.OrderType = command
-
-	b.OrderStopLoss = calculator.CalculateStopLoss(price, b.StopLoss, b.OrderType)
-	b.OrderTakeProfit = calculator.CalculateTakeProfit(price, b.TakeProfit, b.OrderType)
-
-	//capital := (b.CurrentCapital * 25) / 100
-	capital := b.CurrentCapital
-	b.CurrentCapital -= capital
-
-	fee := calculator.CalculateTakerFee(capital)
-
-	capital -= fee
-
-	b.OrderCapitalWithLeverage = b.Leverage * capital
-
-	now := time.Now()
-	b.OrderQuantity = calculator.CalculateBuyQuantity(price, b.OrderCapitalWithLeverage)
-	b.OrderEntryPrice = price
-	b.OrderCapital = capital
-	b.InPos = true
-	b.OrderCreatedTime = now
-	b.OrderScannedTime = now
-	b.OrderFee = fee
-
-	slog.Info("Position opened",
-		"cpt", fmt.Sprintf("%.2f", b.OrderCapital),
-		"name", b.Name,
-		"OrderType", b.OrderType,
-		"entryPrice", b.OrderEntryPrice,
-		"stopLoss", b.OrderStopLoss,
-		"takeProfit", b.OrderTakeProfit,
-		"asset", b.OrderQuantity,
-	)
-
-	return nil
-}
-
-func (b *Bot) BacktestOpenPosition(command order.Command, price float64) error {
-	if err := b.CanOpenPosition(); err != nil {
-		return err
-	}
 	b.OrderType = command
 
 	b.OrderStopLoss = calculator.CalculateStopLoss(price, b.StopLoss, b.OrderType)
@@ -222,7 +163,52 @@ func (b *Bot) ClosePosition(curPrice float64) (model.Order, error) {
 	return closedOrder, nil
 }
 
+func (b *Bot) BacktestOpenPosition(command order.Command, price float64) error {
+	if err := b.CanOpenPosition(); err != nil {
+		return err
+	}
+	b.OrderType = command
+
+	b.OrderStopLoss = calculator.CalculateStopLoss(price, b.StopLoss, b.OrderType)
+	b.OrderTakeProfit = calculator.CalculateTakeProfit(price, b.TakeProfit, b.OrderType)
+
+	//capital := (b.CurrentCapital * 25) / 100
+	capital := b.CurrentCapital
+	b.CurrentCapital -= capital
+
+	fee := calculator.CalculateTakerFee(capital)
+
+	capital -= fee
+
+	b.OrderCapitalWithLeverage = b.Leverage * capital
+
+	now := time.Now()
+	b.OrderQuantity = calculator.CalculateBuyQuantity(price, b.OrderCapitalWithLeverage)
+	b.OrderEntryPrice = price
+	b.OrderCapital = capital
+	b.InPos = true
+	b.OrderCreatedTime = now
+	b.OrderScannedTime = now
+	b.OrderFee = fee
+
+	slog.Info("Position opened",
+		"cpt", fmt.Sprintf("%.2f", b.OrderCapital),
+		"name", b.Name,
+		"OrderType", b.OrderType,
+		"entryPrice", b.OrderEntryPrice,
+		"stopLoss", b.OrderStopLoss,
+		"takeProfit", b.OrderTakeProfit,
+		"asset", b.OrderQuantity,
+	)
+
+	return nil
+}
+
 func (b *Bot) ShiftStopLoss() {
+	if !b.IsTrailingStopActive {
+		return
+	}
+
 	realROE := b.Roe / b.Leverage
 
 	if realROE >= 0.3 {
@@ -264,6 +250,25 @@ func (b *Bot) ShouldClosePosition(curPrice float64) bool {
 		}
 	}
 	return false
+}
+
+func (b *Bot) CanOpenPosition() error {
+	if b.IsNotActive {
+		slog.Debug("bot can't open position, bot not active", "name", b.Name)
+		return errors.New("bot can't open position, bot not active")
+	}
+
+	if b.InPos {
+		slog.Debug("bot is already in open position", "name", b.Name)
+		return errors.New("bot is already in open position")
+	}
+
+	if b.CurrentCapital <= 85 {
+		slog.Debug("bot can't open position, capital not enough", "name", b.Name)
+		return errors.New("bot can't open position, capital not enough")
+	}
+
+	return nil
 }
 
 func (b *Bot) GridOrderMonitor(curPrice float64) {
@@ -319,25 +324,6 @@ func (b *Bot) calculateStatistics(pnl float64) {
 		b.MaxLossStreak = max(b.MaxLossStreak, b.CurrentLossStreak)
 	}
 	b.TotalTrades++
-}
-
-func (b *Bot) CanOpenPosition() error {
-	if b.IsNotActive {
-		slog.Debug("bot can't open position, bot not active", "name", b.Name)
-		return errors.New("bot can't open position, bot not active")
-	}
-
-	if b.InPos {
-		slog.Debug("bot is already in open position", "name", b.Name)
-		return errors.New("bot is already in open position")
-	}
-
-	if b.CurrentCapital <= 85 {
-		slog.Debug("bot can't open position, capital not enough", "name", b.Name)
-		return errors.New("bot can't open position, capital not enough")
-	}
-
-	return nil
 }
 
 func (b *Bot) String() string {

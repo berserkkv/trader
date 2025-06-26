@@ -10,6 +10,7 @@ type BotService interface {
 	GetById(id int64) *bot.Bot
 	Create(bot *bot.Bot) (*bot.Bot, error)
 	Update(bot *bot.Bot) (*bot.Bot, error)
+	UpdateWithRequest(botUpdateReq *model.BotUpdateRequest) (*bot.Bot, error)
 	Delete(id int64) error
 	UpdateAll(bots []*bot.Bot) []error
 	Stop(id int64) error

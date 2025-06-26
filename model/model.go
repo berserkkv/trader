@@ -73,3 +73,10 @@ type Statistics struct {
 	Pnl  float64   `json:"pnl"`
 	Time time.Time `json:"time"`
 }
+
+type BotUpdateRequest struct {
+	Id                   int64   `json:"id"`
+	TakeProfit           float64 `json:"takeProfit"`
+	StopLoss             float64 `json:"stopLoss"`
+	IsTrailingStopActive bool    `json:"isTrailingStopActive"`
+}

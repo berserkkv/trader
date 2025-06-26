@@ -1,6 +1,7 @@
 package controllerImpl
 
 import (
+	controller "github.com/berserkkv/trader/controller/interface"
 	"github.com/berserkkv/trader/httpctx"
 	"github.com/berserkkv/trader/model"
 	service "github.com/berserkkv/trader/service/interface"
@@ -123,13 +124,43 @@ func (ctrl *BotControllerImpl) ClosePosition(ctx httpctx.Context) {
 	ctx.JSON(http.StatusOK, map[string]any{"message": "Closed position", "id": id})
 }
 
+func (ctrl *BotControllerImpl) Update(ctx httpctx.Context) {
+	var req model.BotUpdateRequest
+
+	if err := ctx.BindJSON(&req); err != nil {
+		slog.Error("Invalid input for updating bot", "error", err)
+		ctx.JSON(http.StatusBadRequest, map[string]any{"error": "Invalid input", "details": err.Error()})
+		return
+	}
+
+	updatedBot, err := ctrl.s.UpdateWithRequest(&req)
+	if err != nil {
+		slog.Error("Error updating bot", "id", req.Id, "error", err)
+		ctx.JSON(http.StatusInternalServerError, map[string]any{"error": "Could not update bot", "details": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updatedBot)
+}
+
 func extractID(ctx httpctx.Context) (int64, bool) {
 	idStr := ctx.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		slog.Error("Invalid bot ID", "id", idStr, "error", err)
-		ctx.JSON(http.StatusBadRequest, map[string]any{"error": "Invalid bot ID"})
 		return 0, false
 	}
 	return id, true
 }
+
+func stringToFloat64(ctx httpctx.Context, query string) (float64, error) {
+	f, err := strconv.ParseFloat(ctx.Query(query), 64)
+	if err != nil {
+		slog.Error("Invalid query", "query", query, "error", err)
+		ctx.JSON(http.StatusBadRequest, map[string]any{"error": "Invalid bot ID"})
+		return 0, err
+	}
+	return f, nil
+}
+
+var _ controller.BotController = (*BotControllerImpl)(nil)

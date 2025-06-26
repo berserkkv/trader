@@ -53,6 +53,9 @@ func Register(botController controller.BotController, orderController controller
 		bots.DELETE("/:id", func(c *gin.Context) {
 			botController.DeleteBot(&ctxImpl.GinContext{C: c})
 		})
+		bots.PUT("/update", func(c *gin.Context) {
+			botController.Update(&ctxImpl.GinContext{C: c})
+		})
 	}
 
 	orders := r.Group("/api/orders")

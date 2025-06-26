@@ -149,4 +149,23 @@ func (s *BotServiceImpl) CreateAndAddToBotFather(botReq *model.CreateBotRequest)
 
 }
 
+func (s *BotServiceImpl) UpdateWithRequest(botUpdateRequest *model.BotUpdateRequest) (*bot.Bot, error) {
+	b, err := s.bf.GetBot(botUpdateRequest.Id)
+	if err != nil {
+		slog.Error("error getting bot", "id", botUpdateRequest.Id)
+		return nil, err
+	}
+
+	b.TakeProfit = botUpdateRequest.TakeProfit
+	b.StopLoss = botUpdateRequest.StopLoss
+	b.IsTrailingStopActive = botUpdateRequest.IsTrailingStopActive
+
+	_, err = s.r.Update(b)
+	if err != nil {
+		slog.Error("error updating bot table", "id", b.Id, "error", err)
+		return nil, err
+	}
+	return b, nil
+}
+
 var _ service.BotService = (*BotServiceImpl)(nil)

@@ -161,6 +161,14 @@ func (bf *BotFather) AddBot(bot *bot.Bot) {
 	slog.Info("bot added successfully to BotFather", "name", bot.Name)
 }
 
+func (bf *BotFather) GetBot(id int64) (*bot.Bot, error) {
+	b, ok := bf.bots[id]
+	if !ok {
+		return nil, fmt.Errorf("bot with id %d not found", id)
+	}
+	return b, nil
+}
+
 func (bf *BotFather) IncreaseTotalBotsInOrder() {
 	bf.mu.Lock()
 	bf.totalBotsInOrder += 1

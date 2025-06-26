@@ -12,6 +12,7 @@ type BotController interface {
 	StartBot(c httpctx.Context)
 	StopBot(c httpctx.Context)
 	ClosePosition(c httpctx.Context)
+	Update(c httpctx.Context)
 }
 
 type OrderController interface {
