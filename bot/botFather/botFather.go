@@ -41,7 +41,7 @@ func (bf *BotFather) Start() {
 }
 
 func (bf *BotFather) runBots(minute int, hour int) {
-	time.Sleep(time.Duration(5) * time.Second)
+	time.Sleep(time.Duration(3) * time.Second)
 	for _, b := range bf.Bots() {
 
 		if b == nil || b.IsNotActive || b.InPos {

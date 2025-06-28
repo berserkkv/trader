@@ -15,35 +15,35 @@ type Strategy interface {
 func GetStrategy(name string) Strategy {
 	switch name {
 	case "BBHA":
-		return &BBHAStrategy{}
+		return &strategyImpl.BBHAStrategy{}
 	case "HASmoothed":
-		return &HASmoothedStrategy{}
+		return &strategyImpl.HASmoothedStrategy{}
 	case "HA":
-		return &HAStrategy{}
+		return &strategyImpl.HAStrategy{}
 	case "HAEMA":
-		return &HAEMAStrategy{}
+		return &strategyImpl.HAEMAStrategy{}
 	case "HASmoothedEMA":
-		return &HASmoothedEMAStrategy{}
+		return &strategyImpl.HASmoothedEMAStrategy{}
 	case "BBHA2":
-		return &BBHA2Strategy{}
+		return &strategyImpl.BBHA2Strategy{}
 	case "BBHA3":
-		return &BBHA3{}
+		return &strategyImpl.BBHA3{}
 	case "RANDOM":
-		return &Random{}
+		return &strategyImpl.Random{}
 	case "S":
-		return &Supertrend{}
+		return &strategyImpl.Supertrend{}
 	case "S2":
-		return &Supertrend2{} // 10
+		return &strategyImpl.Supertrend2{} // 10
 	case "HaSlma":
-		return &HaSlma{}
+		return &strategyImpl.HaSlma{}
 	case "3Can":
-		return &TripleCandle{}
+		return &strategyImpl.TripleCandle{}
 	case "SlmaBb":
-		return &SlmaBb{}
+		return &strategyImpl.SlmaBb{}
 	case "3CanSlma":
-		return &TripleCandleSlma{}
+		return &strategyImpl.TripleCandleSlma{}
 	case "SlmaEmaBb":
-		return &SlmaEmaBb{}
+		return &strategyImpl.SlmaEmaBb{}
 	case "SlmaEmaBb2":
 		return &strategyImpl.SlmaEmaBb2{}
 	case "BbHaSlma":

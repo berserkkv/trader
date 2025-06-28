@@ -32,21 +32,6 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 	stopLoss := 0.15
 
 	sts := []strategy.Strategy{
-		//strategy.HAStrategy{},
-		//strategy.HASmoothedStrategy{},
-		//strategy.HAEMAStrategy{},
-		//strategy.BBHAStrategy{},
-		//strategy.BBHA2Strategy{},
-		//strategy.BBHA3{},
-		//strategy.HASmoothedEMAStrategy{},
-		//strategy.Random{},
-		//strategy.Supertrend{},
-		//strategy.Supertrend2{},
-		//&strategy.HaSlma{},
-		//&strategy.TripleCandle{},
-		//&strategy.SlmaBb{},
-		//&strategy.TripleCandleSlma{},
-		//&strategy.SlmaEmaBb{},
 		&strategyImpl.SlmaEmaBb2{},
 		&strategyImpl.Macd{},
 		&strategyImpl.EmaMacd{},

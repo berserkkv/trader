@@ -1,4 +1,4 @@
-package strategy
+package strategyImpl
 
 import (
 	"github.com/berserkkv/trader/model"

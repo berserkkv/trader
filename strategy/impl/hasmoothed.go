@@ -1,4 +1,4 @@
-package strategy
+package strategyImpl
 
 import (
 	"fmt"
@@ -8,20 +8,20 @@ import (
 	"log/slog"
 )
 
-type HAStrategy struct{}
+type HASmoothedStrategy struct{}
 
-func (s HAStrategy) Name() string {
-	return "HA"
+func (s HASmoothedStrategy) Name() string {
+	return "HASmoothed"
 }
 
-func (s HAStrategy) Run(candles []model.Candle) (order.Command, string) {
-	ha := ta.HeikinAshi(candles)
+func (s HASmoothedStrategy) Run(candles []model.Candle) (order.Command, string) {
+	ha := ta.CalculateSmoothedHeikinAshi(candles, 3)
 
 	changed, color := ta.DetectHeikinAshiColorChange(ha)
 
-	slog.Debug(s.Name(), "changed", changed, "color", color)
-
 	info := fmt.Sprintf("HAColor=%s, HAChanged=%t", color, changed)
+
+	slog.Debug(s.Name(), "changed", changed, "color", color)
 
 	if changed {
 		if color == "green" {
@@ -30,5 +30,6 @@ func (s HAStrategy) Run(candles []model.Candle) (order.Command, string) {
 			return order.SHORT, "SHORT " + info
 		}
 	}
+
 	return order.WAIT, "WAIT " + info
 }
