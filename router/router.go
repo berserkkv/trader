@@ -7,6 +7,7 @@ import (
 	"github.com/berserkkv/trader/controller/pairBotController"
 	"github.com/berserkkv/trader/controller/pairOrderController"
 	"github.com/berserkkv/trader/httpctx/ctxImpl"
+	"github.com/berserkkv/trader/system"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -53,7 +54,7 @@ func Register(botController controller.BotController, orderController controller
 		bots.DELETE("/:id", func(c *gin.Context) {
 			botController.DeleteBot(&ctxImpl.GinContext{C: c})
 		})
-		bots.PUT("/update", func(c *gin.Context) {
+		bots.PUT("", func(c *gin.Context) {
 			botController.Update(&ctxImpl.GinContext{C: c})
 		})
 	}
@@ -95,6 +96,11 @@ func Register(botController controller.BotController, orderController controller
 		pairOrders.GET("/by-bot", pairOrderController.GetOrdersByBotId)
 		pairOrders.GET("/statistics", pairOrderController.GetOrderStatistics)
 
+	}
+
+	systemRoute := r.Group("/api/system")
+	{
+		systemRoute.GET("", system.GetSystemUsage)
 	}
 
 	r.Run(":8080")

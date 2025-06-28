@@ -53,7 +53,6 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 	}
 
 	tfs := []timeframe.Timeframe{
-		timeframe.MINUTE_1,
 		timeframe.MINUTE_5,
 		timeframe.MINUTE_15,
 		timeframe.HOUR_1,

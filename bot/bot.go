@@ -62,12 +62,14 @@ func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symb
 		StrategyName: st.Name(),
 		Strategy:     st,
 		//IsNotActive:    true,
-		Connector:      connector.BinanceConnector{},
-		InitialCapital: capital,
-		CurrentCapital: capital,
-		Leverage:       leverage,
-		TakeProfit:     takeProfit,
-		StopLoss:       stopLoss,
+		Connector: connector.BinanceConnector{},
+		//Connector:            &connectorImpl.DummyConnector{},
+		InitialCapital:       capital,
+		CurrentCapital:       capital,
+		Leverage:             leverage,
+		TakeProfit:           takeProfit,
+		StopLoss:             stopLoss,
+		IsTrailingStopActive: true,
 	}
 
 }
