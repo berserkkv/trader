@@ -76,6 +76,9 @@ func Register(botController controller.BotController, orderController controller
 		orders.GET("/statistics", func(c *gin.Context) {
 			orderController.GetStatisticsByBotID(&ctxImpl.GinContext{C: c})
 		})
+		orders.GET("/all-statistics", func(c *gin.Context) {
+			orderController.GetAllStatistics(&ctxImpl.GinContext{C: c})
+		})
 	}
 
 	pairBots := r.Group("/api/pair_bots")

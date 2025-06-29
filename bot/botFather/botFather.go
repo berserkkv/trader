@@ -3,9 +3,12 @@ package botFather
 import (
 	"fmt"
 	"github.com/berserkkv/trader/bot"
+	"github.com/berserkkv/trader/model"
 	"github.com/berserkkv/trader/model/enum/order"
+	"github.com/berserkkv/trader/model/enum/symbol"
 	"github.com/berserkkv/trader/model/enum/timeframe"
 	repository "github.com/berserkkv/trader/repository/interface"
+	"github.com/berserkkv/trader/service/connector"
 
 	"github.com/berserkkv/trader/service/tools"
 	"log/slog"
@@ -24,24 +27,61 @@ type BotFather struct {
 	monitoringRunning bool
 	botRepo           repository.BotRepository
 	orderRepo         repository.OrderRepository
+	botsData          map[timeframe.Timeframe]map[symbol.Symbol]struct{}
+	connector         connector.Connector
+	smallestTimeFrame int
 	mu                sync.Mutex
 }
 
 func (bf *BotFather) Start() {
 	for {
-		tools.WaitUntilNextAlignedTick(60 * time.Second)
+		tools.WaitUntilNextAlignedTick(time.Duration(bf.smallestTimeFrame) * time.Second)
 
 		runTime := time.Now()
 		minute := runTime.Minute()
 		hour := runTime.Hour()
 
 		bf.runBots(minute, hour)
-		bf.botRepo.UpdateAll(bf.Bots())
+		//bf.botRepo.UpdateAll(bf.Bots())
+	}
+}
+
+func (bf *BotFather) getCandles(timeFrame timeframe.Timeframe, candles map[string][]model.Candle) {
+	for tf, smbSet := range bf.botsData {
+		for smb := range smbSet {
+			if tf == timeFrame {
+				if _, ok := candles[string(tf)+string(smb)]; !ok {
+					candles[string(tf)+string(smb)] = []model.Candle{}
+					candles[string(tf)+string(smb)] = bf.connector.GetCandles(smb, tf, 202)
+				}
+			}
+		}
 	}
 }
 
 func (bf *BotFather) runBots(minute int, hour int) {
 	time.Sleep(time.Duration(3) * time.Second)
+	candles := map[string][]model.Candle{}
+
+	if bf.botsData[timeframe.MINUTE_1] != nil {
+		bf.getCandles(timeframe.MINUTE_1, candles)
+	}
+
+	if minute%5 == 0 {
+		bf.getCandles(timeframe.MINUTE_5, candles)
+	}
+	if minute%15 == 0 {
+		bf.getCandles(timeframe.MINUTE_15, candles)
+	}
+	if minute%30 == 0 {
+		bf.getCandles(timeframe.MINUTE_30, candles)
+	}
+	if minute == 0 {
+		bf.getCandles(timeframe.HOUR_1, candles)
+	}
+	if minute == 0 && hour == 0 {
+		bf.getCandles(timeframe.DAY, candles)
+	}
 	for _, b := range bf.Bots() {
 
 		if b == nil || b.IsNotActive || b.InPos {
@@ -56,30 +96,30 @@ func (bf *BotFather) runBots(minute int, hour int) {
 
 		switch b.Timeframe {
 		case timeframe.MINUTE_1:
-			bf.runStrategy(b)
+			bf.runStrategy(b, candles)
 
 		case timeframe.MINUTE_5:
 			if minute%5 == 0 {
-				bf.runStrategy(b)
+				bf.runStrategy(b, candles)
 			}
 		case timeframe.MINUTE_15:
 			if minute%15 == 0 {
-				bf.runStrategy(b)
+				bf.runStrategy(b, candles)
 			}
 
 		case timeframe.MINUTE_30:
 			if minute%30 == 0 {
-				bf.runStrategy(b)
+				bf.runStrategy(b, candles)
 			}
 
 		case timeframe.HOUR_1:
 			if minute == 0 {
-				bf.runStrategy(b)
+				bf.runStrategy(b, candles)
 			}
 
 		case timeframe.DAY:
 			if hour == 0 && minute == 0 {
-				bf.runStrategy(b)
+				bf.runStrategy(b, candles)
 			}
 
 		default:
@@ -88,14 +128,12 @@ func (bf *BotFather) runBots(minute int, hour int) {
 	}
 }
 
-func (bf *BotFather) runStrategy(b *bot.Bot) {
+func (bf *BotFather) runStrategy(b *bot.Bot, candlesMap map[string][]model.Candle) {
 	if b.Connector == nil {
 		slog.Error("No connector found")
 		return
 	}
-	candles := b.Connector.GetCandles(b.Symbol, b.Timeframe, 202)
-
-	slog.Debug("Fetched klines from API", "length", len(candles))
+	candles := candlesMap[string(b.Timeframe)+string(b.Symbol)]
 
 	if len(candles) == 0 {
 		slog.Error("Not enough candles")
@@ -134,6 +172,8 @@ func GetBotFather(botRepo repository.BotRepository, orderRepo repository.OrderRe
 			bots:      make(map[int64]*bot.Bot),
 			botRepo:   botRepo,
 			orderRepo: orderRepo,
+			botsData:  make(map[timeframe.Timeframe]map[symbol.Symbol]struct{}),
+			connector: connector.BinanceConnector{},
 		}
 	})
 	return instance
@@ -158,6 +198,26 @@ func (bf *BotFather) AddBot(bot *bot.Bot) {
 	}
 
 	bf.bots[bot.Id] = bot
+	if _, ok := bf.botsData[bot.Timeframe]; !ok {
+		bf.botsData[bot.Timeframe] = make(map[symbol.Symbol]struct{})
+	}
+	var tf int
+	switch bot.Timeframe {
+	case timeframe.MINUTE_1:
+		tf = 60
+	case timeframe.MINUTE_5:
+		tf = 300
+	case timeframe.MINUTE_15:
+		tf = 900
+	case timeframe.MINUTE_30:
+		tf = 1800
+	case timeframe.HOUR_1:
+		tf = 3600
+	}
+	bf.botsData[bot.Timeframe][bot.Symbol] = struct{}{}
+	if bf.smallestTimeFrame == 0 || (bf.smallestTimeFrame != 0 && bf.smallestTimeFrame > tf) {
+		bf.smallestTimeFrame = tf
+	}
 	slog.Info("bot added successfully to BotFather", "name", bot.Name)
 }
 
@@ -191,7 +251,7 @@ func (bf *BotFather) DeleteBot(id int64) {
 	}
 
 	if bot.InPos {
-		bot.ClosePosition(100)
+		_, _ = bot.ClosePosition(100)
 		bf.DecreaseTotalBotsInOrder()
 	}
 

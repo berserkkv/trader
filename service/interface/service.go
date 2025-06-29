@@ -7,6 +7,7 @@ import (
 
 type BotService interface {
 	GetAll(fields map[string]interface{}) []*bot.Bot
+	GetAllFromRepo(fields map[string]interface{}) []*bot.Bot
 	GetById(id int64) *bot.Bot
 	Create(bot *bot.Bot) (*bot.Bot, error)
 	Update(bot *bot.Bot) (*bot.Bot, error)
@@ -24,7 +25,7 @@ type OrderService interface {
 	GetByID(id int64) *model.Order
 	GetAllByBotID(botID int64) []*model.Order
 	GetStatisticsByBotID(botID int64) []*model.Statistics
-	GetAllStatistics() map[string][]*model.Statistics
+	GetAllStatistics() map[string][]model.Statistics
 	Create(order *model.Order) (*model.Order, error)
 	Update(order *model.Order) (*model.Order, error)
 	Delete(id int64)

@@ -52,6 +52,8 @@ func GetStrategy(name string) Strategy {
 		return &strategyImpl.Macd{}
 	case "EmaMacd":
 		return &strategyImpl.EmaMacd{}
+	case "HammerC":
+		return &strategyImpl.HummerC{}
 	default:
 		slog.Error("Strategy not found", "name", name)
 		return nil

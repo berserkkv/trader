@@ -79,4 +79,9 @@ func (o *OrderControllerImpl) GetAllByBotID(c httpctx.Context) {
 	c.JSON(200, orders)
 }
 
+func (o *OrderControllerImpl) GetAllStatistics(c httpctx.Context) {
+	s := o.s.GetAllStatistics()
+	c.JSON(http.StatusOK, s)
+}
+
 var _ controller.OrderController = (*OrderControllerImpl)(nil)

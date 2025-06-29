@@ -7,11 +7,15 @@ import (
 )
 
 type OrderServiceImpl struct {
-	r repository.OrderRepository
+	r  repository.OrderRepository
+	br repository.BotRepository
 }
 
-func NewOrderServiceImpl(r repository.OrderRepository) *OrderServiceImpl {
-	return &OrderServiceImpl{r: r}
+func NewOrderServiceImpl(r repository.OrderRepository, br repository.BotRepository) *OrderServiceImpl {
+	return &OrderServiceImpl{
+		r:  r,
+		br: br,
+	}
 }
 
 func (s *OrderServiceImpl) GetAll(fields map[string]interface{}) []*model.Order {
@@ -47,40 +51,38 @@ func (s *OrderServiceImpl) GetStatisticsByBotID(botID int64) []*model.Statistics
 	return statistics
 }
 
-func (s *OrderServiceImpl) GetAllStatistics() map[string][]*model.Statistics {
-	//orders := s.r.GetAll(nil)
-	//if len(orders) == 0 {
-	//	return map[string][]*model.Statistics{}
-	//}
-	//
-	//statsMap := make(map[int64][]model.Statistics)
-	//
-	//for _, o := range orders {
-	//	lastPnl := 0.0
-	//	if _, exists := statsMap[o.BotID]; exists {
-	//		lastPnl = statsMap[o.BotID][len(statsMap[o.BotID])-1].Pnl
-	//	}
-	//	statsMap[o.BotID] = append(statsMap[o.BotID], model.Statistics{
-	//		Pnl:  o.ProfitLoss + lastPnl - o.Fee,
-	//		Time: o.ClosedTime,
-	//	})
-	//}
-	//res := make(map[string][]model.Statistics)
-	//
-	//bots := repository.GetAllBots(nil)
-	//
-	//for _, b := range bots {
-	//	if b.IsNotActive {
-	//		continue
-	//	}
-	//	if _, exists := statsMap[b.Id]; exists {
-	//		res[b.Name] = statsMap[b.Id]
-	//	}
-	//}
-	//
-	//return res
+func (s *OrderServiceImpl) GetAllStatistics() map[string][]model.Statistics {
+	orders := s.r.GetAll(nil)
+	if len(orders) == 0 {
+		return map[string][]model.Statistics{}
+	}
 
-	return nil
+	statsMap := make(map[int64][]model.Statistics)
+
+	for _, o := range orders {
+		lastPnl := 0.0
+		if _, exists := statsMap[o.BotID]; exists {
+			lastPnl = statsMap[o.BotID][len(statsMap[o.BotID])-1].Pnl
+		}
+		statsMap[o.BotID] = append(statsMap[o.BotID], model.Statistics{
+			Pnl:  o.ProfitLoss + lastPnl - o.Fee,
+			Time: o.ClosedTime,
+		})
+	}
+	res := make(map[string][]model.Statistics)
+
+	bots := s.br.GetAll(nil)
+
+	for _, b := range bots {
+		if b.IsNotActive {
+			continue
+		}
+		if _, exists := statsMap[b.Id]; exists {
+			res[b.Name] = statsMap[b.Id]
+		}
+	}
+
+	return res
 }
 
 func (s *OrderServiceImpl) Create(order *model.Order) (*model.Order, error) {

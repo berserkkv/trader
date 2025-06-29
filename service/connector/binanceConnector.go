@@ -26,6 +26,7 @@ func (BinanceConnector) GetPrice(smb symbol.Symbol) float64 {
 
 	if err != nil {
 		slog.Error("Failed to get price: %v", err)
+		return 0
 	}
 	defer resp.Body.Close()
 
@@ -37,6 +38,7 @@ func (BinanceConnector) GetPrice(smb symbol.Symbol) float64 {
 	pr, err := strconv.ParseFloat(price.Price, 64)
 	if err != nil {
 		slog.Error("Failed to parse price: %v", err)
+		return 0
 	}
 
 	slog.Debug("Returning price", "price", pr)
@@ -45,7 +47,6 @@ func (BinanceConnector) GetPrice(smb symbol.Symbol) float64 {
 }
 
 func (BinanceConnector) GetCandles(smb symbol.Symbol, interval timeframe.Timeframe, limit int) []model.Candle {
-
 	url := fmt.Sprintf("https://fapi.binance.com/fapi/v1/klines?symbol=%s&interval=%s&limit=%d", string(smb), interval, limit)
 	slog.Debug("GetCandles", "url", url)
 

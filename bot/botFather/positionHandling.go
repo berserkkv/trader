@@ -2,6 +2,7 @@ package botFather
 
 import (
 	"github.com/berserkkv/trader/model"
+	"github.com/berserkkv/trader/model/enum/symbol"
 	"log/slog"
 	"time"
 )
@@ -38,12 +39,22 @@ func (bf *BotFather) monitorPosition() {
 		}
 		bf.mu.Unlock()
 
+		prices := map[symbol.Symbol]float64{}
+
+		for _, smbMap := range bf.botsData {
+			for smb := range smbMap {
+				if _, ok := prices[smb]; !ok {
+					prices[smb] = bf.connector.GetPrice(smb)
+				}
+			}
+		}
+
 		for _, b := range bf.bots {
 			if !b.InPos {
 				continue
 			}
 
-			curPrice := b.Connector.GetPrice(b.Symbol)
+			curPrice := prices[b.Symbol]
 
 			if b.ShouldClosePosition(curPrice) {
 				closedOrder, err := b.ClosePosition(curPrice)

@@ -28,19 +28,19 @@ func main() {
 func runBothFather(bf *botFather.BotFather, service service.BotService) {
 	capital := 100.0
 	leverage := 10.0
-	takeProfit := 0.7
-	stopLoss := 0.15
+	takeProfit := 1.0
+	stopLoss := 0.3
 
 	sts := []strategy.Strategy{
-		&strategyImpl.SlmaEmaBb2{},
 		&strategyImpl.Macd{},
 		&strategyImpl.EmaMacd{},
+		&strategyImpl.HummerC{},
 	}
 
 	tfs := []timeframe.Timeframe{
+		timeframe.MINUTE_1,
 		timeframe.MINUTE_5,
 		timeframe.MINUTE_15,
-		timeframe.HOUR_1,
 	}
 
 	smbs := []symbol.Symbol{
@@ -50,7 +50,13 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 	for _, tf := range tfs {
 		for _, st := range sts {
 			for _, smb := range smbs {
-				b := bot.NewBot(tf, st, smb, capital, leverage, takeProfit, stopLoss)
+				tp := takeProfit
+				sl := stopLoss
+				if tf == timeframe.HOUR_1 {
+					tp *= 2
+					sl *= 2
+				}
+				b := bot.NewBot(tf, st, smb, capital, leverage, tp, sl)
 				_, err := service.Create(b)
 				if err != nil {
 					slog.Debug("Failed to save bot: ", err)
@@ -59,7 +65,7 @@ func runBothFather(bf *botFather.BotFather, service service.BotService) {
 		}
 	}
 
-	bots := service.GetAll(map[string]interface{}{})
+	bots := service.GetAllFromRepo(map[string]interface{}{})
 
 	for i := range bots {
 		bf.AddBot(bots[i])
@@ -81,7 +87,7 @@ func runPairBots() {
 	stopLoss := 0.5
 
 	tfs := []timeframe.Timeframe{
-		timeframe.MINUTE_1,
+		timeframe.MINUTE_5,
 		timeframe.MINUTE_15,
 		//timeframe.HOUR_1,
 	}

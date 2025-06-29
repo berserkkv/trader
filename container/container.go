@@ -42,7 +42,7 @@ func New() *Container {
 
 	// Services
 	botService := serviceImpl.NewBotService(botRepo, bf)
-	orderService := serviceImpl.NewOrderServiceImpl(orderRepo)
+	orderService := serviceImpl.NewOrderServiceImpl(orderRepo, botRepo)
 
 	// Controllers
 	botController := controllerImpl.NewBotController(botService)

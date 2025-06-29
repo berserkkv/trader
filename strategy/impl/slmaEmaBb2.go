@@ -18,6 +18,9 @@ func (s *SlmaEmaBb2) Name() string {
 }
 
 func (s *SlmaEmaBb2) Run(candles []model.Candle) (order.Command, string) {
+	if len(candles) == 0 {
+		return order.WAIT, "candles is empty"
+	}
 	slma20 := ta.SLMA(tools.GetClosePrices(candles), 20)
 	ema200 := ta.EMA(tools.GetClosePrices(candles), 200)
 	price := candles[len(candles)-1].Close

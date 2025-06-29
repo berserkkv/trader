@@ -18,6 +18,7 @@ type BotController interface {
 type OrderController interface {
 	GetAll(c httpctx.Context)
 	GetStatisticsByBotID(c httpctx.Context)
+	GetAllStatistics(c httpctx.Context)
 	Create(c httpctx.Context)
 	Update(c httpctx.Context)
 	GetAllByBotID(c httpctx.Context)

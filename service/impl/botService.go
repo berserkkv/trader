@@ -12,6 +12,7 @@ import (
 	service "github.com/berserkkv/trader/service/interface"
 	"github.com/berserkkv/trader/strategy"
 	"log/slog"
+	"sort"
 )
 
 type BotServiceImpl struct {
@@ -24,6 +25,47 @@ func NewBotService(repo repository.BotRepository, bf *botFather.BotFather) *BotS
 }
 
 func (s *BotServiceImpl) GetAll(field map[string]interface{}) []*bot.Bot {
+	bots := s.bf.Bots()
+	sort.Slice(bots, func(i, j int) bool {
+		if bots[i].CurrentCapital+bots[i].OrderCapital != bots[j].CurrentCapital+bots[j].OrderCapital {
+			return bots[i].CurrentCapital+bots[i].OrderCapital > bots[j].CurrentCapital+bots[j].OrderCapital
+		}
+		first, second := 0, 0
+		switch bots[i].Timeframe {
+		case timeframe.MINUTE_1:
+			first = 1
+		case timeframe.MINUTE_5:
+			first = 5
+		case timeframe.MINUTE_15:
+			first = 15
+		case timeframe.MINUTE_30:
+			first = 30
+		case timeframe.HOUR_1:
+			first = 60
+		case timeframe.DAY:
+			first = 3600
+		}
+		switch bots[j].Timeframe {
+		case timeframe.MINUTE_1:
+			second = 1
+		case timeframe.MINUTE_5:
+			second = 5
+		case timeframe.MINUTE_15:
+			second = 15
+		case timeframe.MINUTE_30:
+			second = 30
+		case timeframe.HOUR_1:
+			second = 60
+		case timeframe.DAY:
+			second = 3600
+		}
+		return first < second
+	})
+
+	return bots
+}
+
+func (s *BotServiceImpl) GetAllFromRepo(field map[string]interface{}) []*bot.Bot {
 	bots := s.r.GetAll(field)
 
 	for i := range bots {
@@ -34,7 +76,11 @@ func (s *BotServiceImpl) GetAll(field map[string]interface{}) []*bot.Bot {
 }
 
 func (s *BotServiceImpl) GetById(id int64) *bot.Bot {
-	return s.r.GetByID(id)
+	b, err := s.bf.GetBot(id)
+	if err != nil {
+		slog.Error("Bot not found", "id", id)
+	}
+	return b
 }
 
 func (s *BotServiceImpl) Create(bot *bot.Bot) (*bot.Bot, error) {

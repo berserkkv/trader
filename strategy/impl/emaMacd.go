@@ -15,6 +15,9 @@ func (s *EmaMacd) Name() string {
 }
 
 func (s *EmaMacd) Run(candles []model.Candle) (order.Command, string) {
+	if len(candles) == 0 {
+		return order.WAIT, "candles is empty"
+	}
 	macdLine, signalLine, histogram := ta.MACDSlice(tools.GetClosePrices(candles))
 	ema200 := ta.EMA(tools.GetClosePrices(candles), 200)
 
