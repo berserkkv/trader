@@ -56,14 +56,12 @@ type Bot struct {
 func NewBot(timeframe timeframe.Timeframe, st strategy.Strategy, smb symbol.Symbol, capital, leverage, takeProfit, stopLoss float64) *Bot {
 	name := st.Name() + "_" + string(timeframe) + "_" + string(smb)
 	return &Bot{
-		Name:         name,
-		Symbol:       smb,
-		Timeframe:    timeframe,
-		StrategyName: st.Name(),
-		Strategy:     st,
-		//IsNotActive:    true,
-		Connector: connector.BinanceConnector{},
-		//Connector:            &connectorImpl.DummyConnector{},
+		Name:                 name,
+		Symbol:               smb,
+		Timeframe:            timeframe,
+		StrategyName:         st.Name(),
+		Strategy:             st,
+		Connector:            connector.BinanceConnector{},
 		InitialCapital:       capital,
 		CurrentCapital:       capital,
 		Leverage:             leverage,
